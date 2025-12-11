@@ -1,117 +1,47 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-import connectDB from "./configs/db.js";
+import "dotenv/config";
+import connectDB from "./config/mongodb.js";
+import { clerkMiddleware } from "@clerk/express";
+import clerkWebhooks from "./controllers/clerkWebhooks.js";
+import userRouter from "./routes/userRoute.js";
+import agencyRouter from "./routes/agencyRoute.js";
+import connectCloudinary from "./config/cloudinary.js";
+import carRouter from "./routes/carRoute.js";
+import bookingRouter from "./routes/bookingRoute.js";
+// import { stripeWebhooks } from "./controllers/stripeWebhooks.js";
 
-// Routes
-import userRoutes from "./routes/userRoutes.js";
-import ownerRoutes from "./routes/ownerRoutes.js";
-import bookingRoutes from "./routes/bookingRoutes.js";
+// Connect to Database and Cloudinary
 
-dotenv.config();
+await connectDB();
+await connectCloudinary();
+
+// initialize Express
 const app = express();
-
-// Middleware
+// Enable Cors Origin Ressource sharing
 app.use(cors());
+
+// API to listen stripe Webhooks
+{ /*app.post('/api/stripe',express({type:"application/json"}), stripeWebhooks)
+*/}
+// Middleware
 app.use(express.json());
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use(clerkMiddleware());
 
-// Connexion DB
-connectDB();
+// API to listen to Clerk Webhooks
+app.use("/api/clerk", clerkWebhooks);
 
-// Routes
-app.use("/api/users", userRoutes);
-app.use("/api/owners", ownerRoutes);
-app.use("/api/bookings", bookingRoutes);
+// Define API Route
+app.use("/api/user", userRouter);
+app.use("/api/agencies", agencyRouter);
+app.use("/api/cars", carRouter);
+app.use('/api/bookings', bookingRouter);
 
-// Gestion erreurs 404
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: "Route not found" });
-});
+// Route Endpoint to Check API status
+app.get("/", (req, res) => res.send("Mr Folly your API Succeessfully Connected"));
 
-// Démarrage serveur
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// Define server port
+const port = process.env.PORT || 4000;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import express from "express";
-// import "dotenv/config";
-// import cors from "cors";
-// import connectDB from "./configs/db.js";
-// import userRouter from "./routes/userRoutes.js";
-// import ownerRouter from "./routes/ownerRoutes.js"
-// import bookingRouter from "./routes/bookingRoutes.js"
-
-// //Iniitialize express app
-// const app = express();
-
-// //Connect to Database
-// await connectDB();
-
-// //Middlewares
-// app.use(cors());
-// app.use(express.json());
-
-
-// app.get("/", (req, res) => res.send("Server is running"));
-// app.use("/api/user", userRouter);
-// app.use("/api/owner",ownerRouter)
-// app.use("/api/booking", bookingRouter);
-
-// //Start the server
-
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+// Start the Server
+app.listen(port, () => console.log(`Server is running at http://localhost:${port}`));

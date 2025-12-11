@@ -1,111 +1,114 @@
 import React, { useState } from "react";
-import { assets, cityList } from "../assets/assets";
+import { assets } from "../assets/data";
 import { useAppContext } from "../context/AppContext";
-import { motion } from "motion/react";
 
 const Hero = () => {
-  const [pickupLocation, setPickupLocation] = useState("");
+  const { navigate, searchedCities, setSearchedCities, axios, getToken } = useAppContext("");
+  const [destination, setDestination] = useState("");
 
-  const { pickupDate, setPickupDate, returnDate, setReturnDate, navigate } = useAppContext();
-
-  const handleSearch = e => {
+  const OnSearch = async e => {
     e.preventDefault();
-    navigate(
-      "/cars?pickupLocation=" +
-        pickupLocation +
-        "&pickupDate=" +
-        pickupDate +
-        "&returnDate=" +
-        returnDate
+    navigate(`/listing?destination=${destination}`);
+    // API to save recent searched city
+    await axios.post(
+      "/api/users/store-recent-search",
+      { recentSearchCities: destination },
+      {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+        },
+      }
     );
+    // Add destination to searchedCities max 3 recent searched cities
+    setSearchedCities(prevSearchedCities => {
+      const updatedSearchedCities = [destination, ...prevSearchedCities];
+      if (updatedSearchedCities.length > 3) {
+        updatedSearchedCities.shift();
+      }
+      return updatedSearchedCities;
+    });
   };
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-      className="h-screen flex flex-col items-center justify-center gap-14 bg-light text-center"
-    >
-      <motion.h1
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-        className="text-4xl md:text-5xl font-semibold"
-      >
-        Luxuruy Cars
-      </motion.h1>
+    <section className="bg-primary">
+      {/* CONTAINER */}
+      <div className="max-padd-container relative flex justify-end mx-auto flex-col gap-9 py-6 pt-32 z-10">
+        {/* Content */}
+        <div className="flexCenter flex-col gap-y-6">
+          <div className="text-center max-w-5xl">
+            <h1 className="capitalize leading-tight">
+              Explore{" "}
+              <span className="bg-gradient-to-r from-solid to-white pl-1 rounded-md">
+                premium vehicles
+              </span>{" "}
+              available in exciting destinations.
+            </h1>
+          </div>
+          {/* Search/Booking Form */}
 
-      <motion.form
-        initial={{ y: 50, opacity: 0, scale: 0.95 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-        onSubmit={handleSearch}
-        className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 rounded-lg md:rounded-full w-full max-w-80 md:max-w-200 bg-white shadow-[0px_8px_20px_rgba(0,0,0,0.1)"
-      >
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-10 min-md:ml-8">
-          <div className="flex flex-col items-start gap-2">
-            <select
-              required
-              value={pickupLocation}
-              onChange={e => setPickupLocation(e.target.value)}
+          <form
+            onSubmit={OnSearch}
+            className="bg-white text-gray-500 rounded-md md:rounded-full px-6 md:pl-12 py-4 flex flex-col md:flex-row gap-4 lg:gap-x-8 max-w-md md:max-w-4xl ring-1 ring-slate-900/5 relative"
+          >
+            <div className="flex flex-col w-full">
+              <div className="flex items-center gap-2">
+                <img src={assets.pin} alt="pinIcon" width={20} />
+                <label htmlFor="destinationInput">Destination</label>
+              </div>
+              <input
+                onChange={e => setDestination(e.target.value)}
+                value={destination}
+                list="destinations"
+                id="destinationInput"
+                type="text"
+                className=" rounded border border-gray-200 px-3 py-1.5 mt-1.5 text-sm outline-none capitalize"
+                placeholder="Type here"
+                required
+              />
+              <datalist id="destinations">
+                {searchedCities.map((city, index) => (
+                  <option key={index} value={city} />
+                ))}
+              </datalist>
+            </div>
+
+            <div className="flex flex-col w-full">
+              <div className="flex items-center gap-2">
+                <img src={assets.calendar} alt="calendarIcon" width={20} />
+                <label htmlFor="pickUp">Pick up</label>
+              </div>
+              <input
+                id="pickUp"
+                type="date"
+                className=" rounded border border-gray-200 px-3 py-1.5 mt-1.5 text-sm outline-none"
+              />
+            </div>
+
+            <div className="flex flex-col w-full">
+              <div className="flex items-center gap-2">
+                <img src={assets.calendar} alt="calendarIcon" width={20} />
+                <label htmlFor="dropOff">Drop Off</label>
+              </div>
+              <input
+                id="dropOff"
+                type="date"
+                className=" rounded border border-gray-200 px-3 py-1.5 mt-1.5 text-sm outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="flexCenter gap-1 rounded-md rounded-md md:rounded-full bg-solid text-white py-2 md:py-5 px-8 my-auto max-md:w-full max-md:py-1 cursor-pointer"
             >
-              <option value="">Pickup Location</option>
-
-              {cityList.map(city => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
-            <p className="px-1 text-sm text-gray-500">
-              {" "}
-              {pickupLocation ? pickupLocation : "Please select a pickup location"}
-            </p>
-          </div>
-          <div className="flex flex-col items-start gap-2">
-            <label htmlFor="pickup-date">Pick-up Date</label>
-            <input
-              value={pickupDate}
-              onChange={e => setPickupDate(e.target.value)}
-              type="date"
-              id="pickup-date"
-              min={new Date().toISOString().split("T")[0]}
-              className="text-sm text-gray-500"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col items-start gap-2">
-            <label htmlFor="return-date">Return Date</label>
-            <input
-              value={returnDate}
-              onChange={e => setReturnDate(e.target.value)}
-              type="date"
-              id="return-date"
-              className="text-sm text-gray-500"
-              required
-            />
-          </div>
+              <img src={assets.search} alt="searchIcon" width={20} className="invert" />
+              <span>Search</span>
+            </button>
+          </form>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center justify-center gap-1 px-9 py-3 max-sm:mt-4 bg-primary hover:bg-primary-dull text-white rounded-full cursor-pointer"
-        >
-          <img src={assets.search_icon} alt="search" className="brightness-300" />
-          Search
-        </motion.button>
-      </motion.form>
-
-      <motion.img
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay:0.6}}
-        src={assets.main_car}
-        alt="car"
-        className="max-h-74"
-      />
-    </motion.div>
+        <div className="flexCenter">
+          <img src={assets.bg} alt="bgImg" className="w-full max-w-[77%]" />
+        </div>
+      </div>
+    </section>
   );
 };
 

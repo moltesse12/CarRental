@@ -1,21 +1,27 @@
 import mongoose from "mongoose";
-const { ObjectId } = mongoose.Schema.Types;
 
 const carSchema = new mongoose.Schema(
   {
-    owner: { type: ObjectId, ref: "User" },
-    brand: { type: String, required: true },
-    model: { type: String, required: true },
-    image: { type: String, required: true },
-    year: { type: Number, required: true },
-    category: { type: Number, required: true },
-    seating_capacity: { type: Number, required: true },
-    fuel_type: { type: String, required: true },
-    transmission: { type: String, required: true },
-    pricePerDay: { type: Number, required: true },
-    location: { type: String, required: true },
+    agency: { type: String, ref: "Agency", required: true },
+    title: { type: String, required: true },
     description: { type: String, required: true },
-    isAvaliable: { type: Boolean, default: true },
+    city: { type: String, required: true },
+    country: { type: String, ref: "User", required: true },
+    address: { type: String, required: true },
+    odometer: { type: Number, required: true },
+    bodyType: { type: String, required: true },
+    price: {
+      rent: { type: Number, required: true },
+      sale: { type: Number, required: true },
+    },
+    specs: {
+      transmission: { type: String, required: true },
+      seats: { type: String, required: true },
+      fuelType: { type: String, required: true },
+    },
+    featured: { type: Array, required: true },
+    images: { type: String },
+    isAvailable: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

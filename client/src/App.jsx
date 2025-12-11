@@ -1,45 +1,50 @@
 import React from "react";
-import { useState } from "react";
-import Navbar from "./components/Navbar";
-import { Routes, Route, useLocation } from "react-router-dom";
-import Home from "./pages/Home.jsx";
-import CarDetails from "./pages/CarDetails.jsx";
-import Cars from "./pages/Cars.jsx";
-import MyBookings from "./pages/MyBookings.jsx";
-import Footer from "./components/Footer.jsx";
-import Layout from "./pages/owner/Layout.jsx";
-import Dashboard from "./pages/owner/Dashboard.jsx";
-import AddCar from "./pages/owner/AddCar.jsx";
-import ManageCars from "./pages/owner/ManageCars.jsx";
-import ManageBookings from "./pages/owner/ManageBookings.jsx";
-import Login from "./components/Login.jsx";
-import {Toaster} from "react-hot-toast"
-import { useAppContext } from "./context/AppContext.jsx";
+import { Route, Routes, useLocation } from "react-router-dom";
+import Header from "./components/Header";
+import Home from "./pages/Home";
+import Listing from "./pages/Listing";
+import CarDetails from "./pages/CarDetails";
+import Blog from "./pages/Blog";
+import MyBookings from "./pages/MyBookings";
+import Contact from "./pages/Contact";
+import Footer from "./components/Footer";
+import "./index.css";
+import Sidebar from "./components/owner/sidebar";
+import Dashboard from "./pages/owner/Dashboard";
+import AddCar from "./pages/owner/AddCar";
+import ListCar from "./pages/owner/ListCar";
+import { Toaster } from "react-hot-toast";
+import { useAppContext } from "./context/AppContext";
+import AgencyReg from "./components/owner/AgencyReg";
+import Processing from "./pages/processing";
 
-function App() {
-  const {showLogin} = useAppContext()
-  const isOwnerPath = useLocation().pathname.startsWith("/owner");
+const App = () => {
+  const { showAgencyReg } = useAppContext();
+  const location = useLocation();
+  const isOwnerPath = location.pathname.includes("owner");
+
   return (
-    <>
-    <Toaster />
-    {showLogin && <Login/>}
-      {!isOwnerPath && <Navbar />}
-
+    <main>
+      {!isOwnerPath && <Header />}
+      {showAgencyReg && <AgencyReg />}
+      <Toaster position="bottom-right" />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/car-details/:id" element={<CarDetails />} />
-        <Route path="/cars" element={<Cars />} />
+        <Route path="/Listing" element={<Listing />} />
+        <Route path="/Listing/:id" element={<CarDetails />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/my-bookings" element={<MyBookings />} />
-        <Route path="/owner" element={<Layout />}>
+        <Route path="/processing/:nextUrl" element={<Processing/>} />
+        <Route path="/owner" element={<Sidebar />}>
           <Route index element={<Dashboard />} />
-          <Route path="add-car" element={<AddCar />} />
-          <Route path="manage-cars" element={<ManageCars />} />
-          <Route path="manage-bookings" element={<ManageBookings />} />
+          <Route path="/owner/add-car" element={<AddCar />} />
+          <Route path="/owner/list-car" element={<ListCar />} />
         </Route>
       </Routes>
       {!isOwnerPath && <Footer />}
-    </>
+    </main>
   );
-}
+};
 
 export default App;

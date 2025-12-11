@@ -1,106 +1,100 @@
-import React, { useState } from "react";
-import { assets, dummyDashboardData } from "../../assets/assets";
-import { useEffect } from "react";
-import Title from "./../../components/owner/Title";
+import React, { useEffect, useState } from "react";
+import { assets } from "../../assets/data";
 import { useAppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
 
 const Dashboard = () => {
-  const {axios, isOwner,currency} = useAppContext()
-  const [data, setData] = useState({
-    totalCars: 0,
+  const { axios, getToken, user, currency } = useAppContext();
+  const [dashboardData, setDashboardData] = useState({
+    bookings: [],
     totalBookings: 0,
-    pendingBookings: 0,
-    completedBookings: 0,
-    recentBookings: [],
-    monthlyRevenue: 0,
+    totalRevenue: 0,
   });
 
-  const dashboardCards = [
-    { title: "Total Cars", value: data.totalCars, icon: assets.carIconColored },
-    { title: "Total Bookings", value: data.totalBookings, icon: assets.listIconColored },
-    { title: "Pending", value: data.pendingBookings, icon: assets.cautionIconColored },
-    { title: "Confirmed", value: data.completedBookings, icon: assets.listIconColored },
-  ];
-  const fecthDashboardData = async ()=>{
+  const getDashboardData = async () => {
     try {
-      const {data} = await axios.get('/api/owner/dashboard')
+      const { data } = await axios.get("/api/bookings/agency", {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+        },
+      });
       if (data.success) {
-        setData(data.DashboardData)
-      }else{
-        toast.error(data.message)
+        setDashboardData(data.dashboard);
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message)
+      console.error("Error fetching dashboard data:", error);
     }
-  }
+  };
+  
   useEffect(() => {
-    if (isOwner) {
-      fecthDashboardData()
-    }
-  }, [isOwner]);
+    getDashboardData();
+  }, [user]);
+
   return (
-    <div className="px-4 pt-10 md:px-10 flex-1">
-      <Title
-        title="Admin Dashboard"
-        subTitle="Monitor overall platform performance including total cars, bookings, revenue, and recent activities"
-      />
-
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 my-8 max-w-3xl">
-        {dashboardCards.map((card, index) => (
-          <div
-            key={index}
-            className="flex gap-2 items-center justify-between p-4 rounded-md border border-borderColor"
-          >
-            <div>
-              <h1 className="text-xs text-gray-500">{card.title}</h1>
-              <p className="text-lg font-semibold">{card.value}</p>
-            </div>
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-              <img src={card.icon} alt="" className="h-4 w-4" />
-            </div>
+    <div className="md:px-8 py-6 xl:py-8 m-1 sm:m-3 h-[97vh] overflow-y-scroll lg:w-11/12 bg-white rounded-xl">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flexStart gap-7 p-5 bg-primaryOne lg:min-w-56 rounded-xl">
+          <img src={assets.carBlack} alt="" className="hidden sm:flex w-8" />
+          <div>
+            <h4>{dashboardData?.totalBookings?.toString().padStart(2, 0)}</h4>
+            <h5 className="text-solid">Total Sales</h5>
           </div>
-        ))}
+        </div>
+        <div className="flexStart gap-7 p-5 bg-primaryTwo lg:min-w-56 rounded-xl">
+          <img src={assets.carBlack} alt="" className="hidden sm:flex w-8" />
+          <div>
+            <h4>{dashboardData?.totalRevenue || 0}</h4>
+            <h5 className="text-solid">Total Earning</h5>
+          </div>
+        </div>
       </div>
-
-      <div className="flex flex-wrap items-start gap-6 mb-8 w-full">
-        {/* recent bookings */}
-        <div className="p-4 md:p-6 border border-borderColor rounded-md max-w-lg w-full">
-          <h1 className="text-lg font-medium">Recent Bookings</h1>
-          <p className="text-gray-500">Latest customer bookings</p>
-          {data.recentBookings.map((booking, index) => (
-            <div key={index} className="mt-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="hidden md:flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                  <img src={assets.listIconColored} alt="" className="h-5 w-5" />
-                </div>
-                <div>
-                  <p>
-                    {booking.car.brand} {booking.car.model}
-                  </p>
-                  <p className="text-sm text-gray-500">{booking.createdAt.split("T")[0]}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 font-medium">
-                <p className="text-sm text-gray-500">
-                  {currency}
-                  {booking.price}
-                </p>
-                <p className="px-3 py-0.5 border border-borderColor rounded-full text-sm">
-                  {booking.status}
-                </p>
-              </div>
+      {/* latest Booking / Sales */}
+      <div className="mt-4">
+        <div className="flex justify-between flex-wrap gap-2 sm:grid grid-cols-[2fr_2fr_1fr_1fr] lg:grid-cols-[0.5fr_2fr_2fr_1fr_1fr] px-6 py-3 bg-solid text-white border-b-1 border-slate-900/10 rounded-t-xl">
+          <h5 className="hidden lg:block">Index</h5>
+          <h5>Car</h5>
+          <h5>Booking Dates</h5>
+          <h5>Amount</h5>
+          <h5>Status</h5>
+        </div>
+      </div>
+      {dashboardData.bookings.map((booking, index) => (
+        <div
+          key={index}
+          className="flex justify-between items-center flex-wrap gap-2 sm:grid grid-cols-[2fr_2fr_1fr_1fr] lg:grid-cols-[0.5fr_2fr_2fr_1fr_1fr] px-6 py-3 bg-primary text-gray-50 text-sm font-semibold border-b-1 border-slate-900/10"
+        >
+          <div className="hidden lg:block">{index + 1}</div>
+          <div className="flexStart gap-x-2 max-w-64">
+            <div className="overflow-hidden rounded-lg">
+              <img
+                src={booking.car.images[0]}
+                alt={booking.car.title}
+                className="w-16 rounded-lg"
+              />
             </div>
-          ))}
+            <div className="line-clamp-2">{booking.car.title}</div>
+          </div>
+          <div>
+            {new Date(booking.pickUpDate).toLocaleDateString()} to{" "}
+            {new Date(booking.dropOffDate).toLocaleDateString()}
+          </div>
+          <div>
+            {currency}
+            {booking.totalPrice}
+          </div>
+          <button
+            className={`${
+              booking.isPaid ? "bg-green-500/80 text-white" : "bg-red-500/80 text-white"
+            } w-22 py-0.5 rounded-full text-xs border border-green-500/30 `}
+          >
+            {booking.isPaid ? "Paid" : "UnPaid"}
+          </button>
         </div>
-        {/* monthly revenue */}
-        <div className="p-4 md:p-6 mb-6 border border-borderColor rounded-md w-full md:max-w-xs">
-          <h1 className="text-lg font-medium">Monthly Revenue</h1>
-          <p className="text-gray-500">Revenue for current month</p>
-          <p className="text-3xl mt-6 font-semibold text-primary">{currency}{data.monthlyRevenue}</p>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };
+
 export default Dashboard;

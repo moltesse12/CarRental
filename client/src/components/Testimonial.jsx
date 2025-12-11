@@ -1,71 +1,85 @@
 import React from "react";
-import Title from "./Title";
-import { assets } from "../assets/assets";
-import { motion } from "motion/react";
+import Title from "./common/Title";
+import { assets } from "../assets/data";
 
 const Testimonial = () => {
-  const testimonials = [
-    {
-      name: "Emma Rodriguez",
-      address: "Barcelona, Spain",
-      image: assets.testimonial_image_1,
-      testimonial:
-        "Exceptional service and attention to detail. Everything was handled professionally and efficiently from start to finish. Highly recommended!",
-    },
-    {
-      name: "Liam Johnson",
-      address: "New York, USA",
-      image: assets.testimonial_image_2,
-      testimonial:
-        "I’m truly impressed by the quality and consistency. The entire process was smooth, and the results exceeded all expectations. Thank you!",
-    },
-    {
-      name: "Sophia Lee",
-      address: "Seoul, South Korea",
-      image: assets.testimonial_image_3,
-      testimonial:
-        "Fantastic experience! From start to finish, the team was professional, responsive, and genuinely cared about delivering great results.",
-    },
-  ];
   return (
-    <div className="py-28 px-6 md:px-16 lg:px-24 xl:px-44">
+    <section className="max-padd-container py-16 xl:py-32">
       <Title
-        title="What Our Customer Say"
-        subTitle="Dciscovery why discerning travelers choose StayVenture for their luxury acccomadations around the world. "
+        title1={"What People Says"}
+        title2={"Don't just take our words"}
+        titleStyles={"mb-10"}
+        para={
+          "Hear what users say about us. We 're always looking for ways to improve. If you have a positive experience with us,leave a review."
+        }
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-18">
-        {testimonials.map((testimonial, index) => (
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: index * 0.2, ease: "easeOut" }}
-            viewport={{ once: true, amount: 0.3 }}
-            key={index}
-            className="bg-white p-6 rounded-xl shadow-lg hover:-translate-y-1 transition-all duration-500"
-          >
-            <div className="flex items-center gap-3">
-              <img
-                className="w-12 h-12 rounded-full"
-                src={testimonial.image}
-                alt={testimonial.name}
-              />
-              <div>
-                <p className="font-playfair text-xl">{testimonial.name}</p>
-                <p className="text-gray-500">{testimonial.location}</p>
-              </div>
+      {/* CONTAINER */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="bg-primary w-full space-y-4 p-3 rounded-md text-gray-500 text-sm">
+          <div className="flexBetween">
+            <div className="flex gap-1">
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
             </div>
-            <div className="flex items-center gap-1 mt-4">
-              {Array(5)
-                .fill(0)
-                .map((_, index) => (
-                  <img key={index} src={assets.star_icon} alt="star-icon" />
-                ))}
+            <p>08 Dec 2025</p>
+          </div>
+          <p>
+            "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Officia voluptate quos sequi
+            nesciunt obcaecati sapiente eos, facilis voluptatum nam quae? Quaerat repellendus sit
+            explicabo? Omnis, repellat quidem. Dignissimos, possimus dolorem!"
+          </p>
+          <div className="flex items-center gap-2">
+            <img src={assets.user1} alt="userImg" className="h-8 w-8 rounded-full" />
+            <p className="text-gray-800 font-medium">John Doe</p>
+          </div>
+        </div>
+        <div className="bg-primary w-full space-y-4 p-3 rounded-md text-gray-500 text-sm">
+          <div className="flexBetween">
+            <div className="flex gap-1">
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
             </div>
-            <p className="text-gray-500 max-w-90 mt-4">{testimonial.testimonial}</p>
-          </motion.div>
-        ))}
+            <p>08 Dec 2025</p>
+          </div>
+          <p>
+            "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Officia voluptate quos sequi
+            nesciunt obcaecati sapiente eos, facilis voluptatum nam quae? Quaerat repellendus sit
+            explicabo? Omnis, repellat quidem. Dignissimos, possimus dolorem!"
+          </p>
+          <div className="flex items-center gap-2">
+            <img src={assets.user2} alt="userImg" className="h-8 w-8 rounded-full" />
+            <p className="text-gray-800 font-medium">John Doe</p>
+          </div>
+        </div>
+        <div className="bg-primary w-full space-y-4 p-3 rounded-md text-gray-500 text-sm">
+          <div className="flexBetween">
+            <div className="flex gap-1">
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+              <img src={assets.star} alt="" width={16} />
+            </div>
+            <p>08 Dec 2025</p>
+          </div>
+          <p>
+            "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Officia voluptate quos sequi
+            nesciunt obcaecati sapiente eos, facilis voluptatum nam quae? Quaerat repellendus sit
+            explicabo? Omnis, repellat quidem. Dignissimos, possimus dolorem!"
+          </p>
+          <div className="flex items-center gap-2">
+            <img src={assets.user3} alt="userImg" className="h-8 w-8 rounded-full" />
+            <p className="text-gray-800 font-medium">John Doe</p>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

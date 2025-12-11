@@ -1,114 +1,155 @@
-import Booking from "../models/Booking.js";
+import Bookings from "../models/Bookings.js";
 import Car from "../models/Car.js";
+import Agency from "../models/Agency.js";
+import transporter from "../config/nodemailer.js";
+// import Stripe from "stripe";
 
-const checkAvailability = async (car, pickupDate, returnDate) => {
-  const bookings = await Booking.find({
-    car,
-    pickupDate: { $lte: returnDate },
-    returnDate: { $gte: pickupDate },
-  });
-  return bookings.length === 0;
-};
-
-// API to check availability of cars for the given Date and location
-export const checkAvailabilityOfCar = async (req, res) => {
+// INTERNAL HELPER
+const checkAvailability = async ({ car, pickUpDate, dropOffDate }) => {
   try {
-    const { location, pickupDate, returnDate } = req.body;
-
-    // fetch all availability cars for the given location
-    const cars = await Car.find({ location, isAvaliable: true });
-
-    // check car availability for the given date range using promise
-    const availableCarsPromises = cars.map(async car => {
-      const isAvailable = await checkAvailability(car._id, pickupDate, returnDate);
-      return { ...car._doc, isAvailable: isAvailable };
+    const bookings = await Bookings.find({
+      car,
+      pickUpDate: { $lte: dropOffDate },
+      dropOffDate: { $gte: pickUpDate },
     });
-
-    let availableCars = await Promise.all(availableCarsPromises);
-    availableCars = availableCars.filter(car => car.isAvailable === true);
-
-    res.json({ success: true, availableCars });
+    return bookings.length === 0;
   } catch (error) {
-    console.log(error.message);
-    res.json({ success: false, message: error.message });
+    throw error;
   }
 };
 
-// API to Create Booking
-export const createBooking = async (req, res) => {
+// TO CHECK CAR AVAILABILITY [POST "check-availability"]
+export const checkBookingAvailability = async (req, res) => {
   try {
-    const { _id } = req.user;
-    const { car, pickupDate, returnDate } = req.body;
+    const { car, pickUpDate, dropOffDate } = req.body;
+    const isAvailable = await checkAvailability({ car, pickUpDate, dropOffDate });
+    res.status(200).json({ success: true, isAvailable });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
-    const isAvailable = await checkAvailability(car, pickupDate, returnDate);
+// CREATE A NEW BOOKING [POST "/book"]
+export const bookingCreate = async (req, res) => {
+  try {
+    const { car, pickUpDate, dropOffDate } = req.body;
+    const user = req.user._id;
+
+    const isAvailable = await checkAvailability({ car, pickUpDate, dropOffDate });
     if (!isAvailable) {
-      return res.json({ success: false, message: "Car is not available" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Car is not available for the selected dates." });
     }
 
-    const carData = await Car.findById(car);
+    // Get Total Price from car
+    const carData = await Car.findById(car).populate("agency");
+    if (!carData) {
+      return res.status(404).json({ success: false, message: "Car not found" });
+    }
+    let totalPrice = carData.price?.rent ?? 0;
 
-    // Calculate price based on pickupDate and returnDate
-    const picked = new Date(pickupDate);
-    const returned = new Date(returnDate);
-    const noOfDays = Math.ceil((returned - picked) / (1000 * 60 * 60 * 24));
-    const price = carData.pricePerDay * noOfDays;
+    // Calculate totalPrice based on days
+    const pickUp = new Date(pickUpDate);
+    const dropOff = new Date(dropOffDate);
+    const timeDiff = Math.abs(dropOff.getTime() - pickUp.getTime());
+    const days = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+    totalPrice = totalPrice * days;
 
-    await Booking.create({ car, owner: carData.owner, user: _id, pickupDate, returnDate, price });
+    const booking = await Bookings.create({
+      user,
+      car,
+      agency: carData.agency._id,
+      pickUpDate,
+      dropOffDate,
+      totalPrice,
+      status: "pending",
+      isPaid: false,
+    });
+    const mailOptions = {
+      from: process.env.SENDER_EMAIL,
+      to: req.user.email,
+      subject: "Booking Car Confirmation",
+      html: `<h2>Your booking has been confirmed!</h2>
+        <p>Thank You booking ! Below are you Booking Details:</p>
+        <ul>
+        <li><strong>Booking ID:</strong> ${booking._id}</li>
+                <li><strong>Agency Name:</strong> ${carData.agency.name}</li>
+                         <li><strong>Date:</strong>${booking.pickUpDate.toDateString()}-${booking.dropOffDate.toDateString()}</li>
+                                <li><strong>Booking Amount:</strong>${process.env.CURRENCY || "$"}${
+        booking.totalPrice
+      } for ${days} day(s)</li>
 
-    res.json({ success: true, message: "Booking Created Successfully" });
+        </ul>
+        <p>We look forward to serving you!</p>
+        <p>Best regards,<br/>Car Rental Team</p>
+    `,
+    };
+    await transporter.sendMail(mailOptions);
+    res
+      .status(201)
+      .json({ success: true, message: "Booking created successfully.", bookingId: booking._id });
   } catch (error) {
-    console.log(error.message);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// API to List User Bookings
+// GET BOOKINGS OF CURRENT USER [GET "/user"]
 export const getUserBookings = async (req, res) => {
   try {
-    const { _id } = req.user;
-    const bookings = await Booking.find({ user: _id }).populate("car").sort({ createdAt: -1 });
-    res.json({ success: true, bookings });
+    const user = req.user._id;
+    const bookings = await Bookings.find({ user }).populate("car").sort({ createdAt: -1 });
+    res.status(200).json({ success: true, bookings });
   } catch (error) {
-    console.log(error.message);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// API to get Owner Bookings
-export const getOwnerBookings = async (req, res) => {
+// GET BOOKINGS FOR Agency [GET "/agency"]
+export const getAgencyBookings = async (req, res) => {
   try {
-    if (req.user.role !== "owner") {
-      return res.json({ success: false, message: "Unauthorized" });
+    const user = req.user._id;
+    const agency = await Agency.findOne({ owner: req.user._id });
+    if (!agency) {
+      return res.status(404).json({ success: false, message: "Agency not found for this user" });
     }
-    const bookings = await Booking.find({ owner: req.user._id })
-      .populate("car user")
-      .select("-user.password")
+    const bookings = await Bookings.find({ agency: agency._id })
+      .populate("car agency user")
       .sort({ createdAt: -1 });
-    res.json({ success: true, bookings });
+    const totalBookings = bookings.length;
+    const totalRevenue = bookings.reduce((acc, b) => acc + (b.isPaid ? b.totalPrice : 0), 0);
+
+    res.status(200).json({ success: true, dashboard: { totalBookings, totalRevenue, bookings } });
   } catch (error) {
-    console.log(error.message);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// API to change bookings status
-export const changeBookingStatus = async (req, res) => {
-  try {
-    const { _id } = req.user;
-    const { bookingId, status } = req.body;
+// STRIPE PAYMENT [POST "/stripe"]
+// Expects { bookingId } in body. Returns { clientSecret } for client to confirm payment.
+// export const bookingsStripePayment = async (req, res) => {
+//   try {
+//     const { bookingId } = req.body;
+//     if (!bookingId) {
+//       return res.status(400).json({ success: false, message: "bookingId is required" });
+//     }
 
-    const booking = await Booking.findById(bookingId);
+//     const booking = await Bookings.findById(bookingId);
+//     if (!booking) {
+//       return res.status(404).json({ success: false, message: "Booking not found" });
+//     }
 
-    if (booking.owner.toString() !== _id.toString()) {
-      return res.json({ success: false, message: "Unauthorized" });
-    }
+//     const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+//     const amountCents = Math.round((booking.totalPrice || 0) * 100);
 
-    booking.status = status;
-    await booking.save();
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       amount: amountCents,
+//       currency: process.env.STRIPE_CURRENCY || "usd",
+//       metadata: { bookingId: booking._id.toString(), userId: req.user._id.toString() },
+//     });
 
-    res.json({ success: true, message: "Booking status updated" });
-  } catch (error) {
-    console.log(error.message);
-    res.json({ success: false, message: error.message });
-  }
-};
+//     res.status(200).json({ success: true, clientSecret: paymentIntent.client_secret });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };

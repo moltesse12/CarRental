@@ -1,171 +1,229 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { assets } from "../assets/assets";
-import Loader from "../components/Loader";
-import { useAppContext } from "./../context/AppContext";
+import React, { useSate, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { assets } from "../assets/data";
+import CarImages from "../components/CarImages";
+import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
-import { motion } from "motion/react";
 
 const CarDetails = () => {
-  const { id } = useParams();
-
-  const { cars, axios, pickupDate, setPickupDate, returnDate, setReturnDate } = useAppContext();
-
-  const navigate = useNavigate();
+  const { currency, cars, navigate, axios, getToken } = useAppContext();
   const [car, setCar] = useState(null);
-  const currency = import.meta.env.VITE_CURRENCY;
+  const { id } = useParams();
+  const [pickUpDate, setPickUpDate] = useState(null);
+  const [dropOffDate, setDropOffDate] = useState(null);
+  const [isAvailable, setIsAvailable] = useState(false);
 
-  const handleSubmit = async e => {
-    e.preventDefault();
+  // CHECK AVAILABILITY
+  const checkAvailability = async () => {
     try {
-      const { data } = await axios.post("/api/bookings/create", {
-        car: id,
-        pickupDate,
-        returnDate,
+      // check is pickUpDate is greater than dropOffDate
+      if (pickUpDate > dropOffDate) {
+        toast.error("Pick Up Date cannot be greater than Drop Off Date");
+      }
+      const { data } = await axios.post("/api/bookings/check-availability", {
+        carId: id,
+        pickUpDate,
+        dropOffDate,
       });
       if (data.success) {
-        toast.success(data.message);
-        navigate("/my-bookings");
+        setIsAvailable(data.isAvailable);
+        if (data.isAvailable) {
+          toast.success("Car is available for the selected dates");
+        } else {
+          toast.error("Car is not available for the selected dates");
+        }
       } else {
-        toast.error(data.message);
+        toast.error("Failed to check availability");
       }
     } catch (error) {
       toast.error(error.message);
     }
   };
 
-  useEffect(() => {
-    setCar(cars.find(car => car._id === id));
-  }, [cars, id]);
+  // BOOK CAR IF ISAVAILABLE
+  const onSubmitHandler = async e => {
+    e.preventDefault();
+    try {
+      if (!isAvailable) {
+        checkAvailability();
+        return;
+      } else {
+        const { data } = await axios.post(
+          "/api/bookings/book",
+          { car: id, pickUpDate, dropOffDate },
+          {
+            Headers: {
+              Authorization: `Bearer ${await getToken()}`,
+            },
+          }
+        );
+        if (data.success) {
+          toast.success(data.message);
+          navigate("/my-bookings");
+          scrollTo(0, 0);
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  }
 
-  return car ? (
-    <div className="px-6 md:px-16 lg:px-24 xl:px-32 mt-16">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-2 mb-6 text-gray-500 cursor-pointer"
-      >
-        <img src={assets.arrow_icon} alt="" className="rotate-180 opacity-65" />
-        Back to all cars
-      </button>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="lg:col-span-2"
-        >
-          <motion.img
-            initial={{ scale: 0.98, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            src={car.image}
-            alt=""
-            className="w-full h-auto md:max-h-100 object-cover rounded-xl mb-6 shadow-md"
-          />
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="space-y-6"
-          >
-            <h1 className="text-3xl font-bold">
-              {car.brand} {car.model}
-            </h1>
-            <p className="text-gray-500 text-lg">
-              {car.category} {car.year}
-            </p>
-
-            <hr className="border-borderColor my-6" />
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { icon: assets.users_icon, text: `${car.seating_capacity} Seats` },
-                { icon: assets.fuel_icon, text: car.fuel_type },
-                { icon: assets.car_icon, text: car.transmission },
-                { icon: assets.location_icon, text: car.location },
-              ].map(({ icon, text }) => (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                  key={text}
-                  className="flex flex-col items-center bg-light p-4 rounded-lg"
+    useEffect(() => {
+      if (cars && cars.length > 0) {
+        const foundCar = cars.find(c => c._id === id);
+        if (foundCar) {
+          setCar(foundCar);
+        }
+      }
+    }, [cars, id]);
+    return (
+      car && (
+        <div className="bg-primary">
+          <div className="max-padd-container px-6 pt-2 pb-16">
+            {/* CONTAINER */}
+            <div className="flex flex-col md:flex-row gap-6 mt-16">
+              {/* INFO LEFT SIDE */}
+              <div className="flex-[5] bg-white p-5 rounded-xl my-4">
+                <p className="flexStart gap-x-2">
+                  <img src={assets.pin} alt="" width={19} />
+                  <span>{car.address}</span>
+                </p>
+                <div className="flex justify-between flex-col sm:flex-row sm:items-end mt-3">
+                  <h3>{car.title}</h3>
+                  <h4>
+                    {currency}
+                    {car.price.sale} | {car.price.rent}.00/days
+                  </h4>
+                </div>
+                <div className="flex justify-between items-start my-1">
+                  <h4 className="text-solid">{car.bodyType}</h4>
+                  <div className="flex items-baseline gap-2 relative top-1.5">
+                    <h4 className="relative bottom-0.5 text-black">5.0</h4>
+                    <img src={assets.star} alt="startIcon" width={18} />
+                    <img src={assets.star} alt="startIcon" width={18} />
+                    <img src={assets.star} alt="startIcon" width={18} />
+                    <img src={assets.star} alt="startIcon" width={18} />
+                    <img src={assets.star} alt="startIcon" width={18} />
+                  </div>
+                </div>
+                <div className="flex gap-x-4 mt-3">
+                  <p className="flexCenter gap-x-2 border-r border-slate-900/50 pr-4 font-[500]">
+                    <img src={assets.transmission} alt="" width={18} />
+                    {car.specs.transmission}
+                  </p>
+                  <p className="flexCenter gap-x-2 border-r border-slate-900/50 pr-4 font-[500]">
+                    <img src={assets.seats} alt="" width={18} />
+                    {car.specs.seats}
+                  </p>
+                  <p className="flexCenter gap-x-2 border-r border-slate-900/50 pr-4 font-[500]">
+                    <img src={assets.fuelType} alt="" width={18} />
+                    {car.specs.fuelType}
+                  </p>
+                  <p className="flexCenter gap-x-2 border-r border-slate-900/50 pr-4 font-[500]">
+                    <img src={assets.odometer} alt="" width={18} />
+                    {car.odometer}
+                  </p>
+                </div>
+                <div className="mt-5">
+                  <h4 className="mt-4 mb-1">Car Details</h4>
+                  <p className="mt-4">{car.description}</p>
+                </div>
+                <h4 className="mt-6 mb-2">Features</h4>
+                <div className="flex gap-3 flex-wrap">
+                  {car.features.map(feature => (
+                    <p key={feature} className="p-3 py-1 rounded-lg bg-primary">
+                      {feature}
+                    </p>
+                  ))}
+                </div>
+                {/* FORM */}
+                <form
+                  onSubmit={onSubmitHandler}
+                  className="text-gray-500 bg-primary rounded-lg px-6 py-4 flex flex-col lg:flex-row gap-4 max-w-md lg:max-w-full ring-1 ring-slate-900/5 relative mt-10"
                 >
-                  <img src={icon} alt="" className="h-5 mb-2" />
-                  {text}
-                </motion.div>
-              ))}
+                  <div className="flex flex-col w-full">
+                    <div className="flex items-center gap-2">
+                      <img src={assets.calendar} alt="calendarIcon" width={20} />
+                      <label htmlFor="pickUpDate">pickUpDate</label>
+                    </div>
+                    <input
+                      type="date"
+                      onChange={e => setPickUpDate(e.target.value)}
+                      min={new Date().toISOString().split("T")[0]}
+                      id="pickUpDate"
+                      className="rounded bg-white border border-gray-200 px-3 py-1.5 mt-1.5 text-sm outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <div className="flex items-center gap-2">
+                      <img src={assets.calendar} alt="calendarIcon" width={20} />
+                      <label htmlFor="dropOffDate">Drop Off</label>
+                    </div>
+                    <input
+                      type="date"
+                      onChange={e => setDropOffDate(e.target.value)}
+                      min={pickUpDate || new Date().toISOString().split("T")[0]}
+                      id="dropOffDate"
+                      disabled={!pickUpDate}
+                      className="rounded bg-white border border-gray-200 px-3 py-1.5 mt-1.5 text-sm outline-none"
+                    />
+                  </div>
+                  <button type="submit" className="flexCenter gap-1 rounded-md btn-solid min-w-44">
+                    <img src={assets.search} alt="searcIcon" width={20} className="invert" />
+                    <span>{isAvailable ? "Book Car" : "Check Dates"}</span>
+                  </button>
+                </form>
+                {/* CONTACT Agency */}
+                <div className="p-6 bg-primary rounded-xl mt-10 max-w-sm">
+                  <h4 className="mb-3">For Buying Contact</h4>
+                  <div className="text-sm sm:w-80 divide-y divide-gray-500/30 ring-1 ring-slate-900/10 rounded">
+                    <div className="flex items-start justify-between p-3">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h5>{car.agency.name}</h5>
+                          <p className="bg-green-500/20 px-2 py-0.5 rounded-full text-xs text-green-600 border border-green-500/30 ">
+                            Agency
+                          </p>
+                        </div>
+                        <p>Agency Office</p>
+                      </div>
+                      <img src={car.agency.owner.image} alt="" className="h-10 w-10 rounded-full" />
+                    </div>
+                    <div className="flexStart gap-2 p-1.5">
+                      <div className="bg-green-500/20 p-1 rounded-full border border-green-500/30">
+                        <img src={assets.phone} alt="" width={14} />
+                      </div>
+                      <p>{car.agency.contact}</p>
+                    </div>
+                    <div className="flexStart gap-2 p-1.5">
+                      <div className="bg-green-500/20 p-1 rounded-full border border-green-500/30">
+                        <img src={assets.mail} alt="" width={14} />
+                      </div>
+                      <p>{car.agency.mail}</p>
+                    </div>
+                    <div className="flex items-center divide-x divide-gray-500/30">
+                      <button className="flex items-center justify-center gap-2 w-1/2 py-3 cursor-pointer">
+                        <img src={assets.mail} alt="" width={19} />
+                        Send Email
+                      </button>
+                      <button>
+                        <img src={assets.phone} alt="" width={19} /> Call Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* IMAGE RIGHT SIDE */}
+              <div className="flex flex-[4] w-full bg-white p-4 rounded-xl my-4">
+                <CarImages car={car} />
+              </div>
             </div>
-            {/* Description Section */}
-            <div>
-              <h1 className="text-xl font-medium mb-3">Description</h1>
-              <p className="text-gray-500">{car.description}</p>
-            </div>
-            {/* Feature */}
-            <div>
-              <h1 className="text-xl font-medium mb-3">Features</h1>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {["360 Camera", " Bluetooth", "GPS", "Heated Seats", "Rear View Mirror"].map(
-                  item => (
-                    <li key={item} className="flex items-center text-gray-500">
-                      <img src={assets.check_icon} alt="" className="h-4 mr-2" />
-                      {item}
-                    </li>
-                  )
-                )}
-              </ul>
-            </div>
-          </motion.div>
-        </motion.div>
-        <motion.form
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          onSubmit={handleSubmit}
-          className="shadow-lg h-max sticky top-18 rounded-xl p-6 space-y-6 text-gray-500"
-        >
-          <p className="flex items-center justify-between text-2xl text-gray-800 font-semibold">
-            {currency}
-            {car.pricePerDay}
-            <span className="text-base text-shadow-gray-400 font-normal">per day</span>
-          </p>
-          <hr className="border-borderColor my-6" />
-          <div className="flex flex-col gap-2">
-            <label htmlFor="pickup-date">Pick-up Date</label>
-            <input
-              value={pickupDate}
-              onChange={e => setPickupDate(e.target.value)}
-              type="date"
-              className="border bordr-Color px-3 py-2 rounded-lg"
-              required
-              id="pickup-date"
-              min={new Date().toISOString().split("T")[0]}
-            />
           </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="return-date">Return Date</label>
-            <input
-              value={returnDate}
-              onChange={e => setReturnDate(e.target.value)}
-              type="date"
-              className="border bordr-Color px-3 py-2 rounded-lg"
-              required
-              id="return-date"
-            />
-          </div>
-
-          <button className="w-full bg-primary hover:bg-primary-dull transition-all py-3 font-medium text-white rounded-xl cursor-pointer">
-            Book Now
-          </button>
-
-          <p className="text-center text-sm">No credit card required to reserve</p>
-        </motion.form>
-      </div>
-    </div>
-  ) : (
-    <Loader />
-  );
-};
+        </div>
+      )
+    );
+  };
 
 export default CarDetails;

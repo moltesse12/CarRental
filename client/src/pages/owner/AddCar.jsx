@@ -1,228 +1,335 @@
 import React, { useState } from "react";
-import { assets } from "../../assets/assets";
-import Title from "../../components/owner/Title";
+import { assets } from "../../assets/data";
 import { useAppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
 
 const AddCar = () => {
-  const {axios,currency} = useAppContext
-  const [image, setImage] = useState(null);
-  const [car, setCar] = useState({
-    brand: "",
-    model: "",
-    year: 0,
-    pricePerDay: 0,
-    category: "",
-    transmission: "",
-    fuel_type: "",
-    seating_capacity: 0,
-    location: "",
-    description: "",
+  const { axios, getToken } = useAppContext();
+  const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState({
+    1: null,
+    2: null,
+    3: null,
+    4: null,
   });
 
-  const [isLoading, setIsLoading]= useState(false)
-  const onSubmitHandler = async (e) => {
-    e.preventDefault()
-    if(isLoading) return null
+  const [inputs, setInputs] = useState({
+    Title: "",
+    description: "",
+    city: "",
+    country: "",
+    address: "",
+    odometer: "",
+    bodyType: "",
+    priceRent: "",
+    priceSale: "",
+    transmissions: "",
+    seats: "",
+    fuelType: "",
+    features: {
+      "Rear Camera": false,
+      "Apple CarPlay": false,
+      "Adaptive Cruise ": false,
+      "Heated Seats": false,
+      Sunroof: false,
+      "Parkin Assist": false,
+      "Cruiser Control": false,
+    },
+  });
 
-    setIsLoading(true)
+  const bodyType = ["SUV", "Sedan", "Hatchback", "Coupe", "Convertible", "Van", "Grand Tourner"];
+
+  const transmissions = ["Automatic", "Manual", "CVT", "Dual-Clutch"];
+
+  const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid"];
+
+  const onSubmitHandler = async event => {
+    event.preventDefault();
+    //
+    if (
+      !inputs.Title ||
+      !inputs.description ||
+      !inputs.city ||
+      !inputs.country ||
+      !inputs.address ||
+      !inputs.odometer ||
+      !inputs.bodyType ||
+      (!inputs.priceRent && !inputs.priceSale) ||
+      !inputs.transmissions ||
+      !inputs.seats ||
+      !inputs.fuelType
+    ) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+    // check if at least 1 image is uploaded
+    const hasImage = Object.values(images).some(img => img !== null);
+    if (!hasImage) {
+      toast.error("Please upload at least one image");
+      return;
+    }
+    setLoading(true);
     try {
-      const formData = new FormData()
-      formData.append('image', image)
-      formData.append('carData', JSON.stringify(car))
-      const {data} = await.post('/api/owner/add-car',formData){
+      const formData = new FormData();
+      formData.append("Title", inputs.Title);
+      formData.append("description", inputs.description);
+      formData.append("city", inputs.city);
+      formData.append("country", inputs.country);
+      formData.append("address", inputs.address);
+      formData.append("odometer", inputs.odometer);
+      formData.append("bodyType", inputs.bodyType);
+      formData.append("priceRent", inputs.priceRent ? Number(inputs.priceRent) : "");
+      formData.append("priceSale", inputs.priceSale ? Number(inputs.priceSale) : "");
 
-        if(data.success){
-          toast.success(data.message)
-          setImage(null)
-          setCar({
-            brand='',
-            model='',
-            year=0,
-            pricePerDay:0,
-            category:'',
-            transmission:'',
-            fuel_type:'',
-            seating_capacity:0,
-            location:'',
-            description:'',
-          })
-        }else{
-          toast.error(data.message)
-        }
+      // Converting features to Array & keeping only enabled features
+      const features = Object.keys(inputs.features).filter(key => inputs.features[key]);
+      formData.append("features", JSON.stringify(features));
+
+      // Adding images to FormData
+      Object.keys(images).forEach(key => {
+        images[key] && formData.append("images", images[key]);
+      });
+
+      const { data } = await axios.post("/api/cars", formData, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
+      if (data.success) {
+        toast.success(data.message);
+        // Reset form after success
+        setInputs({
+          Title: "",
+          description: "",
+          city: "",
+          country: "",
+          address: "",
+          odometer: "",
+          bodyType: "",
+          priceRent: "",
+          priceSale: "",
+          transmissions: "",
+          seats: "",
+          fuelType: "",
+          features: {
+            "Rear Camera": false,
+            "Apple CarPlay": false,
+            "Adaptive Cruise ": false,
+            "Heated Seats": false,
+            Sunroof: false,
+            "Parkin Assist": false,
+            "Cruiser Control": false,
+          },
+        });
+        setImages({
+          1: null,
+          2: null,
+          3: null,
+          4: null,
+        });
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
-      toast.error(error.message)
-    }finally{
-      setIsLoading(false)
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
-  return (
-    <div className="px-4 py-10 md:px-10 flex-1">
-      <Title title="Add New Car" subTitle="Fill in the details to add a new car to the platform" />
 
+  return (
+    <div className="md:px-8 py-6 xl:py-8 m-1.5 sm:m-3 h-[97vh] overflow-y-scroll lg:w-11/12 bg-white shadow rounded-xl">
       <form
         onSubmit={onSubmitHandler}
-        className="flex flex-col gap-5 text-gray-500 text-sm mt-6 max-w-xl"
+        className="flex flex-col gap-y-3.5 px-2 text-sm font-medium xl:max-w-3xl"
       >
-        {/* Car Image */}
-        <div className="flex items-center gap-2">
-          <label htmlFor="car-image">
-            <img
-              src={image ? URL.createObjectURL(image) : assets.upload_icon}
-              alt=""
-              className="h-14 rounded cursor-pointer"
-            />
-            <input
-              type="file"
-              id="car-image"
-              accept="image/*"
-              hidden
-              onChange={e => setImage(e.target.files[0])}
-            />
-          </label>
-          <p className="text-sm text-gray-500">upload a picture of your car</p>
-        </div>
-        {/* Car Brand & Model */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col w-full">
-            <label>Brand</label>
-            <input
-              type="text"
-              placeholder="e.g. Toyota..."
-              className="border border-borderColor rounded-md px-3 py-2 mt-1 outline-none"
-              value={car.brand}
-              onChange={e => setCar({ ...car, brand: e.target.value })}
-              required
-            />
-          </div>
-          <div className="flex flex-col w-full">
-            <label>Model</label>
-            <input
-              type="text"
-              placeholder="e.g. LLand Cruiser 300..."
-              className="border border-borderColor rounded-md px-3 py-2 mt-1 outline-none"
-              value={car.model}
-              onChange={e => setCar({ ...car, model: e.target.value })}
-              required
-            />
-          </div>
-        </div>
-        {/* Car Year,Price,category */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <div className="flex flex-col w-full">
-            <label>Year</label>
-            <input
-              type="number"
-              placeholder="e.g. 2025..."
-              className="border border-borderColor rounded-md px-3 py-2 mt-1 outline-none"
-              value={car.year}
-              onChange={e => setCar({ ...car, year: parseInt(e.target.value) })}
-              required
-            />
-          </div>
-          <div className="flex flex-col w-full">
-            <label>Daily Price ({currency})</label>
-            <input
-              type="number"
-              placeholder="e.g. 60..."
-              className="border border-borderColor rounded-md px-3 py-2 mt-1 outline-none"
-              value={car.pricePerDay}
-              onChange={e => setCar({ ...car, pricePerDay: e.target.value })}
-              required
-            />
-          </div>
-          <div className="flex flex-col w-full">
-            <label>Category</label>
-            <select
-              onChange={e => setCar({ ...car, category: e.target.value })}
-              value={car.category}
-              className="px-3 py-2 mt-1 border border-borderColor rounded-md outline-none"
-            >
-              <option value="">Select a category </option>
-              <option value="SUV">SUV</option>
-              <option value="Sedan">Sedan</option>
-              <option value="Hatchback">Hatchback</option>
-              <option value="Convertible">Convertible</option>
-              <option value="Coupe">Coupe</option>
-              <option value="Minivan">Minivan</option>
-              <option value="Pickup Truck">Pickup Truck</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Car Transmission, Fuel Type, Seating Capacity */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <div className="flex flex-col w-full">
-            <label>Transmission</label>
-            <select
-              onChange={e => setCar({ ...car, transmission: e.target.value })}
-              value={car.transmission}
-              className="px-3 py-2 mt-1 border border-borderColor rounded-md outline-none"
-            >
-              <option value="">Select transmission</option>
-              <option value="Automatic">Automatic</option>
-              <option value="Manual">Manual</option>
-            </select>
-          </div>
-          <div className="flex flex-col w-full">
-            <label>Fuel Type</label>
-            <select
-              onChange={e => setCar({ ...car, fuel_type: e.target.value })}
-              value={car.fuel_type}
-              className="px-3 py-2 mt-1 border border-borderColor rounded-md outline-none"
-            >
-              <option value="">Select fuel type</option>
-              <option value="Gasoline">Gasoline</option>
-              <option value="Diesel">Diesel</option>
-              <option value="Electric">Electric</option>
-              <option value="Hybrid">Hybrid</option>
-            </select>
-          </div>
-          <div className="flex flex-col w-full">
-            <label>Seating Capacity</label>
-            <input
-              type="number"
-              placeholder="e.g. 5..."
-              className="border border-borderColor rounded-md px-3 py-2 mt-1 outline-none"
-              value={car.seating_capacity}
-              onChange={e => setCar({ ...car, seating_capacity: parseInt(e.target.value) })}
-              required
-            />
-          </div>
-        </div>
-        {/* Car location */}
-        <div className="flex flex-col w-full">
-          <label>Location</label>
-          <select
-            onChange={e => setCar({ ...car, location: e.target.value })}
-            value={car.location}
-            className="px-3 py-2 mt-1 border border-borderColor rounded-md outline-none"
-          >
-            <option value="">Select location</option>
-            <option value="New York">New York</option>
-            <option value="Los Angeles">Los Angeles</option>
-            <option value="Chicago">Chicago</option>
-            <option value="Houston">Houston</option>
-          </select>
-        </div>
-        {/* Car Description */}
-        <div className="flex flex-col w-full">
-          <label>Description</label>
-          <textarea
-            rows={5}
-            placeholder="Enter a description for the car..."
-            className="border border-borderColor rounded-md px-3 py-2 mt-1 outline-none"
-            value={car.description}
-            onChange={e => setCar({ ...car, description: e.target.value })}
-            required
+        <div className="w-full">
+          <h5>Car Name</h5>
+          <input
+            onChange={e => setInputs({ ...inputs, Title: e.target.value })}
+            value={inputs.Title}
+            type="text"
+            placeholder="Type here..."
+            className="px-3 py-1.5 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
           />
         </div>
-        <button
-          type="submit"
-          className="flex items-center gap-2 px-4 py-2.5 mt-4 bg-primary text-white rounded-md font-medium w-max cursor-pointer"
-        >
-          <img src={assets.tick_icon} alt="" />
-          {isLoading ? 'Listing...':'List Your Car'}
+
+        <div className="w-full">
+          <h5>Car Description</h5>
+          <textarea
+            onChange={e => setInputs({ ...inputs, description: e.target.value })}
+            value={inputs.description}
+            rows={5}
+            type="text"
+            placeholder="Type here..."
+            className="px-3 py-1.5 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
+          ></textarea>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="w-full">
+            <h5>City</h5>
+            <input
+              onChange={e => setInputs({ ...inputs, city: e.target.value })}
+              value={inputs.city}
+              rows={5}
+              type="text"
+              placeholder="Type here..."
+              className="px-3 py-1.5 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
+            ></input>
+          </div>
+          <div className="w-full">
+            <h5>Contry</h5>
+            <input
+              onChange={e => setInputs({ ...inputs, country: e.target.value })}
+              value={inputs.country}
+              rows={5}
+              type="text"
+              placeholder="Type here..."
+              className="px-3 py-1.5 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
+            ></input>
+          </div>
+          <div>
+            <h5>Car Type</h5>
+            <select
+              onChange={e => setInputs({ ...inputs, bodyType: e.target.value })}
+              value={inputs.bodyType}
+              className="w-36 px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1"
+            >
+              <option>Select Type</option>
+              {bodyType.map(bt => (
+                <option value={bt}>{bt}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="flex gap-4 flex-wrap w-full">
+          <div className="flex-[1]">
+            <h5>Adress</h5>
+            <input
+              onChange={e => setInputs({ ...inputs, address: e.target.value })}
+              value={inputs.address}
+              type="text"
+              placeholder="Type here..."
+              className="px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
+            />
+          </div>
+          <div className="w-34">
+            <h5>Odometer</h5>
+            <input
+              onChange={e => setInputs({ ...inputs, odometer: e.target.value })}
+              value={inputs.odometer}
+              type="number"
+              placeholder="e.g. 12,500(km)"
+              className="w-28 px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1"
+            />
+          </div>
+        </div>
+        <div className="flex gap-4 flex-wrap ">
+          <div className="">
+            <h5>
+              Rent Price <span className="text-xs">/day</span>
+            </h5>
+            <input
+              onChange={e => setInputs({ ...inputs, rentPrice: e.target.value })}
+              value={inputs.rentPrice}
+              type="number"
+              placeholder="9999"
+              className="w-28 px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1"
+            />
+          </div>
+          <div>
+            <h5>Sale Price</h5>
+            <input
+              onChange={e => setInputs({ ...inputs, salePrice: e.target.value })}
+              value={inputs.salePrice}
+              type="number"
+              placeholder="9999"
+              className="px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
+            />
+          </div>
+          <div className="w-34">
+            <h5>Transmission</h5>
+            <select
+              onChange={e => setInputs({ ...inputs, transmissions: e.target.value })}
+              value={inputs.transmissions}
+              className="px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
+            >
+              {" "}
+              <option>Select Type</option>
+              {transmissions.map(t => (
+                <option value={t}>{t}</option>
+              ))}{" "}
+            </select>
+          </div>
+          <div>
+            <h5>Seats</h5>
+            <input
+              onChange={e => setInputs({ ...inputs, seats: e.target.value })}
+              value={inputs.seats}
+              type="number"
+              placeholder="1"
+              className="w-20 px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1"
+            />
+          </div>
+          <div>
+            <h5>Fuel Type</h5>
+            <select
+              onChange={e => setInputs({ ...inputs, fuelType: e.target.value })}
+              value={inputs.fuelType}
+              className="px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
+            >
+              {" "}
+              <option>Select Type</option>
+              {fuelTypes.map(f => (
+                <option value={f}>{f}</option>
+              ))}{" "}
+            </select>
+          </div>
+        </div>
+        {/* features */}
+        <div>
+          <h5>features</h5>
+          <div className="flex gap-3 flex-wrap mt-1">
+            {Object.keys(inputs.features).map((feature, index) => (
+              <div key={index} className="flex gap-1">
+                <input
+                  onChange={e => setInputs({ ...inputs, features: { ...inputs.features, [feature]: e.target.checked } })}
+                  value={inputs.features}
+                  id={`features${index + 1}`}
+                  type="checkbox"
+                  checked={inputs.features[feature]}
+                />
+                <label htmlFor={`features${index + 1}`}>{feature}</label>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* IMAGES */}
+        <div className="flex gap-2 mt-2">
+          {Object.keys(images).map(key => (
+            <label
+              key={key}
+              htmlFor={`carImages${key}`}
+              className="ring-1 ring-slate-900/10 overflow-hidden rounded-lg "
+            >
+              <input
+                onChange={e => setImages({ ...images, [key]: e.target.files[0] })}
+                type="file"
+                accept="image/*"
+                id={`carImages${key}`}
+                hidden
+              />
+              <div className="h-12 w-24 bg-primary flexCenter">
+                <img
+                  src={images[key] ? URL.createObjectURL(images[key]) : assets.uploadIcon}
+                  alt="uploadArea"
+                  className="overflow-hidden object-contain"
+                />
+              </div>
+            </label>
+          ))}
+        </div>
+        <button type="submit" disabled={loading} className="btn-solid mt-3 max-w-36">
+          {loading ? "Adding..." : "Add Car"}
         </button>
       </form>
     </div>

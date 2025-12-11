@@ -1,85 +1,57 @@
 import React from "react";
-import { assets } from "../assets/assets";
-import { motion } from "motion/react";
+import { assets } from "../assets/data";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="px-6 md:px-16 lg:px-24 xl:px-32 mt-60 text-sm text-gray-500"
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="flex flex-wrap justify-between items-start gap-8 pb-6 border-borderColor border-b"
-      >
-        <div>
-          <motion.img
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            src={assets.logo}
-            alt="logo"
-            className="h-8 md:h-9"
-          />
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="max-w-80 mt-3"
-          >
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
-            has been the industry standard dummy text
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="flex items-center gap-3 mt-6"
-          >
-            <a href="#">
-              <img src={assets.facebook_logo} className="w-5 h-5" alt="" />
-            </a>
-            <a href="#">
-              <img src={assets.instagram_logo} className="w-5 h-5" alt="" />
-            </a>
-            <a href="#">
-              <img src={assets.twitter_logo} className="w-5 h-5" alt="" />
-            </a>
-            <a href="#">
-              <img src={assets.gmail_logo} className="w-5 h-5" alt="" />
-            </a>
-          </motion.div>
-        </div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="flex flex-wrap justify-between w-1/2 gap-8"
-        >
+    <footer className="pt-16 w-full text-gray-500 bg-primaryTwo border-t-1 border-slate-900/5">
+      <div className="max-padd-container">
+        <div className="flex flex-wrap justify-between gap-12 md:gap-6">
+          <div className="max-w-80">
+            <div className="flex flex-1">
+              {/* LOGO */}
+              <Link to={"/"}>
+                <img src={assets.logoImg} alt="logoImg" width={88} className="h-7" />
+                <span className="text-textColor uppercase text-xs font-extrabold tracking-[6px] relative bottom-1">
+                  CarRental
+                </span>
+              </Link>
+            </div>
+            <p className="text-sm pt-3">
+              Find reliable cars with transparent pricing. We offer the best rental experience with
+              quality vehicles and honest rates.
+            </p>
+            <div className="flex items-center gap-3 mt-4">
+              <img src={assets.facebook} alt="facebook" />
+              <img src={assets.instagram} alt="instagram" />
+              <img src={assets.twitter} alt="twitter" />
+              <img src={assets.linkedin} alt="linkedin" />
+            </div>
+          </div>
+
           <div>
-            <h2 className="text-base  font-medium text-gray-800 uppercase ">Quick Links</h2>
-            <ul className="mt-3 flex flex-col gap-1.5 text-sm">
+            <h4 className="text-textColor">COMPANY</h4>
+            <ul className="mt-3 flex flex-col gap-2 text-sm">
               <li>
-                <a href="#">Home</a>
+                <a href="#">About</a>
               </li>
               <li>
-                <a href="#">Browse Cars</a>
+                <a href="#">Careers</a>
               </li>
               <li>
-                <a href="#">List Your Car</a>
+                <a href="#">Press</a>
               </li>
               <li>
-                <a href="#">About Us</a>
+                <a href="#">Blog</a>
+              </li>
+              <li>
+                <a href="#">Partners</a>
               </li>
             </ul>
           </div>
 
           <div>
-            <p className="text-lg text-gray-800">SUPPORT</p>
+            <h4 className="text-text-textColor">SUPPORT</h4>
             <ul className="mt-3 flex flex-col gap-2 text-sm">
               <li>
                 <a href="#">Help Center</a>
@@ -99,60 +71,43 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div>
-            <p className="text-lg text-gray-800">Ressources</p>
-            <ul className="mt-3 flex flex-col gap-2 text-sm">
-              <li>
-                <a href="#">Help Center</a>
-              </li>
-              <li>
-                <a href="#">Terms of Service</a>
-              </li>
-              <li>
-                <a href="#">Privacy Policy</a>
-              </li>
-              <li>
-                <a href="#">insurance</a>
-              </li>
-              <li>
-                <a href="#">Accessibility</a>
-              </li>
-            </ul>
+          <div className="max-w-80">
+            <h4 className="text-text-textColor">STAY UPDATED</h4>
+            <p className="mt-3 text-sm">
+              Subscribe to our newsletter for inspiration and special offers.
+            </p>
+            <div className="flex items-center border pl-4 gap-2 bg-white border-gray-500/30 h-[46px] rounded-full overflow-hidden max-w-md w-full mt-6">
+              <input
+                type="text"
+                className="w-full h-full outline-none text-sm text-gray-500"
+                placeholder="Your email"
+              />
+              <button className="btn-solid bg-black font-medium !px-3.5 py-2 mr-0.5">
+                Subscribe
+              </button>
+            </div>
           </div>
-
-          <div>
-            <p className="text-lg text-gray-800">Contact</p>
-            <ul className="mt-3 flex flex-col gap-2 text-sm">
-              <li>1234 Luxury St</li>
-              <li>San Francisco, CA 90210</li>
-              <li>+1 234 567890</li>
-              <li>info@example.com</li>
-            </ul>
-          </div>
-        </motion.div>
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.6 }}
-        className="flex flex-col md:flex-row gap-2 items-center justify-between py-5"
-      >
-        <p>© {new Date().getFullYear()} All rights reserved.</p>
-        <ul className="flex items-center gap-4">
-          <li>
-            <a href="#">Privacy</a>
-          </li>
-          <li>|</li>
-          <li>
-            <a href="#">Terms</a>
-          </li>
-          <li>|</li>
-          <li>
-            <a href="#">Cookies</a>
-          </li>
-        </ul>
-      </motion.div>
-    </motion.div>
+        </div>
+        <hr className="border-gray-300 mt-8" />
+        <div className="flex flex-col md:flex-row gap-2 items-center justify-between py-5">
+          <p>
+            © {new Date().getFullYear()} <a>CarRental</a>. All rights
+            reserved.
+          </p>
+          <ul className="flex items-center gap-4">
+            <li>
+              <a href="#">Privacy</a>
+            </li>
+            <li>
+              <a href="#">Terms</a>
+            </li>
+            <li>
+              <a href="#">Sitemap</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </footer>
   );
 };
 
