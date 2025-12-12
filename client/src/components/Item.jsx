@@ -27,7 +27,7 @@ const Item = ({ car }) => {
         <div className="text-sm font-bold text-solid">
           {currency}
           {car.price.sale} | {currency}
-          {car.price.rent}.00 <span className="text-xs">/day</span>
+          {car.price.rent}.00 <span className="text-xs">/jour</span>
         </div>
       </div>
       {/* IMAGE */}
@@ -41,17 +41,17 @@ const Item = ({ car }) => {
             <img src={assets.transmission} alt="" width={19} />
             {car.specs.transmission}
           </p>
-          <hr className="h-[44px] w-0.5 bg-slate-900/20 border-none" />
+          <hr className="h-11 w-0.5 bg-slate-900/20 border-none" />
           <p className="flexCenter flex-col gap-1 font-semibold">
             <img src={assets.seats} alt="" width={23} />
             {car.specs.seats}
           </p>
-          <hr className="h-[44px] w-0.5 bg-slate-900/20 border-none" />
+          <hr className="h-11 w-0.5 bg-slate-900/20 border-none" />
           <p className="flexCenter flex-col gap-1 font-semibold">
             <img src={assets.fuelType} alt="" width={19} />
             {car.specs.fuelType}
           </p>
-          <hr className="h-[44px] w-0.5 bg-slate-900/20 border-none" />
+          <hr className="h-11 w-0.5 bg-slate-900/20 border-none" />
           <p className="flexCenter flex-col gap-1 font-semibold">
             <img src={assets.odometer} alt="" width={19} />
             {car.odometer}

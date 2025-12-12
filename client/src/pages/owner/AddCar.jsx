@@ -1,336 +1,336 @@
 import React, { useState } from "react";
-import { assets } from "../../assets/data";
-import { useAppContext } from "../../context/AppContext";
+import { useAppContext } from "../../hooks/useAppContext";
 import toast from "react-hot-toast";
 
 const AddCar = () => {
   const { axios, getToken } = useAppContext();
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState({
-    1: null,
-    2: null,
-    3: null,
-    4: null,
-  });
-
-  const [inputs, setInputs] = useState({
-    Title: "",
+  const [formData, setFormData] = useState({
+    title: "",
     description: "",
     city: "",
     country: "",
     address: "",
     odometer: "",
     bodyType: "",
-    priceRent: "",
-    priceSale: "",
-    transmissions: "",
+    transmission: "",
     seats: "",
     fuelType: "",
-    features: {
-      "Rear Camera": false,
-      "Apple CarPlay": false,
-      "Adaptive Cruise ": false,
-      "Heated Seats": false,
-      Sunroof: false,
-      "Parkin Assist": false,
-      "Cruiser Control": false,
-    },
+    rentPrice: "",
+    salePrice: "",
+    features: "",
+    images: [],
   });
 
-  const bodyType = ["SUV", "Sedan", "Hatchback", "Coupe", "Convertible", "Van", "Grand Tourner"];
+  const handleInputChange = e => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-  const transmissions = ["Automatic", "Manual", "CVT", "Dual-Clutch"];
+  const handleFileChange = e => {
+    const files = Array.from(e.target.files);
+    setFormData(prev => ({
+      ...prev,
+      images: files,
+    }));
+  };
 
-  const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid"];
-
-  const onSubmitHandler = async event => {
-    event.preventDefault();
-    //
-    if (
-      !inputs.Title ||
-      !inputs.description ||
-      !inputs.city ||
-      !inputs.country ||
-      !inputs.address ||
-      !inputs.odometer ||
-      !inputs.bodyType ||
-      (!inputs.priceRent && !inputs.priceSale) ||
-      !inputs.transmissions ||
-      !inputs.seats ||
-      !inputs.fuelType
-    ) {
-      toast.error("Please fill all required fields");
-      return;
-    }
-    // check if at least 1 image is uploaded
-    const hasImage = Object.values(images).some(img => img !== null);
-    if (!hasImage) {
-      toast.error("Please upload at least one image");
-      return;
-    }
+  const handleSubmit = async e => {
+    e.preventDefault();
     setLoading(true);
+
     try {
-      const formData = new FormData();
-      formData.append("Title", inputs.Title);
-      formData.append("description", inputs.description);
-      formData.append("city", inputs.city);
-      formData.append("country", inputs.country);
-      formData.append("address", inputs.address);
-      formData.append("odometer", inputs.odometer);
-      formData.append("bodyType", inputs.bodyType);
-      formData.append("priceRent", inputs.priceRent ? Number(inputs.priceRent) : "");
-      formData.append("priceSale", inputs.priceSale ? Number(inputs.priceSale) : "");
+      // Create FormData to handle file uploads
+      const form = new FormData();
+      form.append("title", formData.title);
+      form.append("description", formData.description);
+      form.append("city", formData.city);
+      form.append("country", formData.country);
+      form.append("address", formData.address);
+      form.append("odometer", formData.odometer);
+      form.append("bodyType", formData.bodyType);
+      form.append("transmission", formData.transmission);
+      form.append("seats", formData.seats);
+      form.append("fuelType", formData.fuelType);
+      form.append("rentPrice", formData.rentPrice);
+      form.append("salePrice", formData.salePrice);
+      form.append("features", formData.features);
 
-      // Converting features to Array & keeping only enabled features
-      const features = Object.keys(inputs.features).filter(key => inputs.features[key]);
-      formData.append("features", JSON.stringify(features));
-
-      // Adding images to FormData
-      Object.keys(images).forEach(key => {
-        images[key] && formData.append("images", images[key]);
+      // Append images
+      formData.images.forEach(image => {
+        form.append("images", image);
       });
 
-      const { data } = await axios.post("/api/cars", formData, {
-        headers: { Authorization: `Bearer ${await getToken()}` },
+      const { data } = await axios.post("/api/cars", form, {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
+
       if (data.success) {
-        toast.success(data.message);
-        // Reset form after success
-        setInputs({
-          Title: "",
+        toast.success(data.message || "Voiture ajoutée avec succès !");
+        // Reset form
+        setFormData({
+          title: "",
           description: "",
           city: "",
           country: "",
           address: "",
           odometer: "",
           bodyType: "",
-          priceRent: "",
-          priceSale: "",
-          transmissions: "",
+          transmission: "",
           seats: "",
           fuelType: "",
-          features: {
-            "Rear Camera": false,
-            "Apple CarPlay": false,
-            "Adaptive Cruise ": false,
-            "Heated Seats": false,
-            Sunroof: false,
-            "Parkin Assist": false,
-            "Cruiser Control": false,
-          },
-        });
-        setImages({
-          1: null,
-          2: null,
-          3: null,
-          4: null,
+          rentPrice: "",
+          salePrice: "",
+          features: "",
+          images: [],
         });
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Impossible d'ajouter la voiture");
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Erreur lors de l'ajout de la voiture");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="md:px-8 py-6 xl:py-8 m-1.5 sm:m-3 h-[97vh] overflow-y-scroll lg:w-11/12 bg-white shadow rounded-xl">
-      <form
-        onSubmit={onSubmitHandler}
-        className="flex flex-col gap-y-3.5 px-2 text-sm font-medium xl:max-w-3xl"
-      >
-        <div className="w-full">
-          <h5>Car Name</h5>
-          <input
-            onChange={e => setInputs({ ...inputs, Title: e.target.value })}
-            value={inputs.Title}
-            type="text"
-            placeholder="Type here..."
-            className="px-3 py-1.5 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
+    <div className="md:px-8 py-6 xl:py-8 m-1 sm:m-3 h-[97vh] overflow-y-scroll lg:w-11/12 bg-white rounded-xl">
+      <h2 className="text-2xl font-bold mb-6">Ajouter une nouvelle voiture</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Titre */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Titre de la voiture</label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="ex. Toyota Camry 2023"
+            />
+          </div>
+
+          {/* Type de carrosserie */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Type de carrosserie</label>
+            <select
+              name="bodyType"
+              value={formData.bodyType}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            >
+              <option value="">Sélectionnez le type de carrosserie</option>
+              <option value="Sedan">Berline</option>
+              <option value="SUV">SUV</option>
+              <option value="Coupe">Coupé</option>
+              <option value="Van">Monospace</option>
+              <option value="Truck">Camion</option>
+              <option value="Hatchback">Berline compacte</option>
+            </select>
+          </div>
+
+          {/* Ville */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Ville</label>
+            <input
+              type="text"
+              name="city"
+              value={formData.city}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="ex. New York"
+            />
+          </div>
+
+          {/* Pays */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Pays</label>
+            <input
+              type="text"
+              name="country"
+              value={formData.country}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="ex. USA"
+            />
+          </div>
+
+          {/* Adresse */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">Adresse</label>
+            <input
+              type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="Adresse de rue"
+            />
+          </div>
+
+          {/* Compteur kilométrique */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Compteur kilométrique (km)</label>
+            <input
+              type="number"
+              name="odometer"
+              value={formData.odometer}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="ex. 5000"
+            />
+          </div>
+
+          {/* Transmission */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Transmission</label>
+            <select
+              name="transmission"
+              value={formData.transmission}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            >
+              <option value="">Sélectionnez la transmission</option>
+              <option value="Manual">Manuelle</option>
+              <option value="Automatic">Automatique</option>
+            </select>
+          </div>
+
+          {/* Sièges */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Nombre de sièges</label>
+            <input
+              type="number"
+              name="seats"
+              value={formData.seats}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="ex. 5"
+            />
+          </div>
+
+          {/* Type de carburant */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Type de carburant</label>
+            <select
+              name="fuelType"
+              value={formData.fuelType}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            >
+              <option value="">Sélectionnez le type de carburant</option>
+              <option value="Petrol">Essence</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Electric">Électrique</option>
+              <option value="Hybrid">Hybride</option>
+            </select>
+          </div>
+
+          {/* Prix de location journalière */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Prix de location journalière ($)
+            </label>
+            <input
+              type="number"
+              name="rentPrice"
+              value={formData.rentPrice}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="ex. 50"
+            />
+          </div>
+
+          {/* Prix de vente */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Prix de vente ($)</label>
+            <input
+              type="number"
+              name="salePrice"
+              value={formData.salePrice}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              placeholder="ex. 25000"
+            />
+          </div>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Description</label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            required
+            rows="4"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            placeholder="Description de la voiture et caractéristiques"
           />
         </div>
 
-        <div className="w-full">
-          <h5>Car Description</h5>
-          <textarea
-            onChange={e => setInputs({ ...inputs, description: e.target.value })}
-            value={inputs.description}
-            rows={5}
+        {/* Caractéristiques */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Caractéristiques (séparées par des virgules)
+          </label>
+          <input
             type="text"
-            placeholder="Type here..."
-            className="px-3 py-1.5 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
-          ></textarea>
+            name="features"
+            value={formData.features}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+            placeholder="ex. Climatisation, Direction assistée, Freins ABS"
+          />
         </div>
 
-        <div className="flex gap-4">
-          <div className="w-full">
-            <h5>City</h5>
-            <input
-              onChange={e => setInputs({ ...inputs, city: e.target.value })}
-              value={inputs.city}
-              rows={5}
-              type="text"
-              placeholder="Type here..."
-              className="px-3 py-1.5 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
-            ></input>
-          </div>
-          <div className="w-full">
-            <h5>Contry</h5>
-            <input
-              onChange={e => setInputs({ ...inputs, country: e.target.value })}
-              value={inputs.country}
-              rows={5}
-              type="text"
-              placeholder="Type here..."
-              className="px-3 py-1.5 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
-            ></input>
-          </div>
-          <div>
-            <h5>Car Type</h5>
-            <select
-              onChange={e => setInputs({ ...inputs, bodyType: e.target.value })}
-              value={inputs.bodyType}
-              className="w-36 px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1"
-            >
-              <option>Select Type</option>
-              {bodyType.map(bt => (
-                <option value={bt}>{bt}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="flex gap-4 flex-wrap w-full">
-          <div className="flex-[1]">
-            <h5>Adress</h5>
-            <input
-              onChange={e => setInputs({ ...inputs, address: e.target.value })}
-              value={inputs.address}
-              type="text"
-              placeholder="Type here..."
-              className="px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
-            />
-          </div>
-          <div className="w-34">
-            <h5>Odometer</h5>
-            <input
-              onChange={e => setInputs({ ...inputs, odometer: e.target.value })}
-              value={inputs.odometer}
-              type="number"
-              placeholder="e.g. 12,500(km)"
-              className="w-28 px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1"
-            />
-          </div>
-        </div>
-        <div className="flex gap-4 flex-wrap ">
-          <div className="">
-            <h5>
-              Rent Price <span className="text-xs">/day</span>
-            </h5>
-            <input
-              onChange={e => setInputs({ ...inputs, rentPrice: e.target.value })}
-              value={inputs.rentPrice}
-              type="number"
-              placeholder="9999"
-              className="w-28 px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1"
-            />
-          </div>
-          <div>
-            <h5>Sale Price</h5>
-            <input
-              onChange={e => setInputs({ ...inputs, salePrice: e.target.value })}
-              value={inputs.salePrice}
-              type="number"
-              placeholder="9999"
-              className="px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
-            />
-          </div>
-          <div className="w-34">
-            <h5>Transmission</h5>
-            <select
-              onChange={e => setInputs({ ...inputs, transmissions: e.target.value })}
-              value={inputs.transmissions}
-              className="px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
-            >
-              {" "}
-              <option>Select Type</option>
-              {transmissions.map(t => (
-                <option value={t}>{t}</option>
-              ))}{" "}
-            </select>
-          </div>
-          <div>
-            <h5>Seats</h5>
-            <input
-              onChange={e => setInputs({ ...inputs, seats: e.target.value })}
-              value={inputs.seats}
-              type="number"
-              placeholder="1"
-              className="w-20 px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1"
-            />
-          </div>
-          <div>
-            <h5>Fuel Type</h5>
-            <select
-              onChange={e => setInputs({ ...inputs, fuelType: e.target.value })}
-              value={inputs.fuelType}
-              className="px-3 py-1.5 ring-1 ring-slate-900/10 rounded-lg bg-primary mt-1 w-full"
-            >
-              {" "}
-              <option>Select Type</option>
-              {fuelTypes.map(f => (
-                <option value={f}>{f}</option>
-              ))}{" "}
-            </select>
-          </div>
-        </div>
-        {/* features */}
+        {/* Images */}
         <div>
-          <h5>features</h5>
-          <div className="flex gap-3 flex-wrap mt-1">
-            {Object.keys(inputs.features).map((feature, index) => (
-              <div key={index} className="flex gap-1">
-                <input
-                  onChange={e => setInputs({ ...inputs, features: { ...inputs.features, [feature]: e.target.checked } })}
-                  value={inputs.features}
-                  id={`features${index + 1}`}
-                  type="checkbox"
-                  checked={inputs.features[feature]}
-                />
-                <label htmlFor={`features${index + 1}`}>{feature}</label>
-              </div>
-            ))}
-          </div>
+          <label className="block text-sm font-medium mb-1">Images de la voiture</label>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+          />
+          {formData.images.length > 0 && (
+            <p className="text-sm text-gray-600 mt-2">
+              {formData.images.length} image(s) sélectionnée(s)
+            </p>
+          )}
         </div>
-        {/* IMAGES */}
-        <div className="flex gap-2 mt-2">
-          {Object.keys(images).map(key => (
-            <label
-              key={key}
-              htmlFor={`carImages${key}`}
-              className="ring-1 ring-slate-900/10 overflow-hidden rounded-lg "
-            >
-              <input
-                onChange={e => setImages({ ...images, [key]: e.target.files[0] })}
-                type="file"
-                accept="image/*"
-                id={`carImages${key}`}
-                hidden
-              />
-              <div className="h-12 w-24 bg-primary flexCenter">
-                <img
-                  src={images[key] ? URL.createObjectURL(images[key]) : assets.uploadIcon}
-                  alt="uploadArea"
-                  className="overflow-hidden object-contain"
-                />
-              </div>
-            </label>
-          ))}
+
+        {/* Bouton de soumission */}
+        <div className="flex gap-4 pt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400"
+          >
+            {loading ? "Ajout en cours..." : "Ajouter une voiture"}
+          </button>
         </div>
-        <button type="submit" disabled={loading} className="btn-solid mt-3 max-w-36">
-          {loading ? "Adding..." : "Add Car"}
-        </button>
       </form>
     </div>
   );

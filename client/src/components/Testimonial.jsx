@@ -6,11 +6,11 @@ const Testimonial = () => {
   return (
     <section className="max-padd-container py-16 xl:py-32">
       <Title
-        title1={"What People Says"}
-        title2={"Don't just take our words"}
+        title1={"Ce que les gens disent"}
+        title2={"Ne nous croyez pas sur parole"}
         titleStyles={"mb-10"}
         para={
-          "Hear what users say about us. We 're always looking for ways to improve. If you have a positive experience with us,leave a review."
+          "Écoutez ce que les utilisateurs disent de nous. Nous cherchons toujours des moyens de nous améliorer. Si vous avez une expérience positive avec nous, laissez un avis."
         }
       />
       {/* CONTAINER */}

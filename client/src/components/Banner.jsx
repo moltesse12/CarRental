@@ -10,19 +10,20 @@ const Banner = () => {
         {/* CONTAINER */}
         <div className="flex flex-col md:flex-row">
           {/* LEFT SIDE */}
-          <div className="flex-[5] relative lg:bottom-12 xl:bottom-20">
+          <div className="flex-5 relative lg:bottom-12 xl:bottom-20">
             <img src={assets.banner} alt="bannerImg" />
           </div>
           {/* RIGHT SIDE */}
-          <div className="flex-[4] text-white">
+          <div className="flex-4 text-white">
             <div className="flex flex-col gap-4 p-4">
-              <h3 className="capitalize xl:pt-6">Buy width condfidence, rent without worry</h3>
+              <h3 className="capitalize xl:pt-6">Achetez en confiance, louez sans souci</h3>
               <p className="text-white/70">
-                Find your next ride or earn from your vehicles in minutes. we handle insurance,
-                driver verification and secure payments
+                Trouvez votre prochaine voiture ou gagnez avec vos véhicules en quelques minutes.
+                Nous gérons les assurances, la vérification des conducteurs et les paiements
+                sécurisés
               </p>
               <button onClick={() => navigate("/listing")} className="btn-white w-36">
-                Explore cars
+                Explorer les voitures
               </button>
             </div>
           </div>

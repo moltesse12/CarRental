@@ -1,7 +1,11 @@
 import express from "express";
-import { bookingCreate
-  // , bookingsStripePayment
-  , checkBookingAvailability, getAgencyBookings, getUserBookings } from "../controllers/bookingController.js";
+import {
+  bookingCreate,
+  // bookingsStripePayment,
+  checkBookingAvailability,
+  getAgencyBookings,
+  getUserBookings
+} from "../controllers/bookingController.js";
 import { authUser } from "../middleware/authMiddleware.js";
 
 const bookingRouter = express.Router();

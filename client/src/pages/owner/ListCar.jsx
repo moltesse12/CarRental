@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { useAppContext } from "../../context/AppContext";
+import { useAppContext } from "../../hooks/useAppContext";
 import toast from "react-hot-toast";
 
 const ListCar = () => {
@@ -56,18 +56,18 @@ const ListCar = () => {
     <div className="md:px-8 py-6 m-1 sm:m-3 h-[97vh] overflow-y-scroll lg:w-11/12 shadow rounded-xl">
       {/* ALL CARS */}
       <div className="mt-4">
-        <div className="flex justify-between flex-wrap gap-2 sm:grid grid-cols-[2fr_2fr_1fr_1fr] lg:grid-cols-[0.5fr_2fr_2fr_1fr_1fr] px-6 py-3 bg-solid text-white border-b-1 border-slate-900/10 rounded-t-xl">
+        <div className="flex justify-between flex-wrap gap-2 sm:grid grid-cols-[2fr_2fr_1fr_1fr] lg:grid-cols-[0.5fr_2fr_2fr_1fr_1fr] px-6 py-3 bg-solid text-white border-b border-slate-900/10 rounded-t-xl">
           <h5 className="hidden lg:block">Index</h5>
-          <h5>Name</h5>
-          <h5>Address</h5>
-          <h5>Price</h5>
-          <h5>Available</h5>
+          <h5>Nom</h5>
+          <h5>Adresse</h5>
+          <h5>Prix</h5>
+          <h5>Disponible</h5>
         </div>
       </div>
       {cars.map((car, index) => (
         <div
           key={index}
-          className="flex justify-between items-center flex-wrap gap-2 sm:grid grid-cols-[2fr_2fr_1fr_1fr] lg:grid-cols-[0.5fr_2fr_2fr_1fr_1fr] px-6 py-3 bg-primary text-gray-50 text-sm font-semibold border-b-1 border-slate-900/10"
+          className="flex justify-between items-center flex-wrap gap-2 sm:grid grid-cols-[2fr_2fr_1fr_1fr] lg:grid-cols-[0.5fr_2fr_2fr_1fr_1fr] px-6 py-3 bg-primary text-gray-50 text-sm font-semibold border-b border-slate-900/10"
         >
           <div className="hidden lg:block">{index + 1}</div>
           <div className="flexStart gap-x-2 max-w-64">

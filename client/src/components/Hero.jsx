@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { assets } from "../assets/data";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../hooks/useAppContext";
 
 const Hero = () => {
   const { navigate, searchedCities, setSearchedCities, axios, getToken } = useAppContext("");
@@ -36,11 +36,11 @@ const Hero = () => {
         <div className="flexCenter flex-col gap-y-6">
           <div className="text-center max-w-5xl">
             <h1 className="capitalize leading-tight">
-              Explore{" "}
-              <span className="bg-gradient-to-r from-solid to-white pl-1 rounded-md">
-                premium vehicles
+              Explorez{" "}
+              <span className="bg-linear-to-r from-solid to-white pl-1 rounded-md">
+                des véhicules premium
               </span>{" "}
-              available in exciting destinations.
+              disponibles dans des destinations intéressantes.
             </h1>
           </div>
           {/* Search/Booking Form */}
@@ -61,7 +61,7 @@ const Hero = () => {
                 id="destinationInput"
                 type="text"
                 className=" rounded border border-gray-200 px-3 py-1.5 mt-1.5 text-sm outline-none capitalize"
-                placeholder="Type here"
+                placeholder="Taper ici"
                 required
               />
               <datalist id="destinations">
@@ -74,7 +74,7 @@ const Hero = () => {
             <div className="flex flex-col w-full">
               <div className="flex items-center gap-2">
                 <img src={assets.calendar} alt="calendarIcon" width={20} />
-                <label htmlFor="pickUp">Pick up</label>
+                <label htmlFor="pickUp">Retrait</label>
               </div>
               <input
                 id="pickUp"
@@ -86,7 +86,7 @@ const Hero = () => {
             <div className="flex flex-col w-full">
               <div className="flex items-center gap-2">
                 <img src={assets.calendar} alt="calendarIcon" width={20} />
-                <label htmlFor="dropOff">Drop Off</label>
+                <label htmlFor="dropOff">Restitution</label>
               </div>
               <input
                 id="dropOff"
@@ -97,10 +97,10 @@ const Hero = () => {
 
             <button
               type="submit"
-              className="flexCenter gap-1 rounded-md rounded-md md:rounded-full bg-solid text-white py-2 md:py-5 px-8 my-auto max-md:w-full max-md:py-1 cursor-pointer"
+              className="flexCenter gap-1 rounded-md bg-solid text-white py-2 md:py-5 px-8 my-auto max-md:w-full max-md:py-1 cursor-pointer"
             >
               <img src={assets.search} alt="searchIcon" width={20} className="invert" />
-              <span>Search</span>
+              <span>Rechercher</span>
             </button>
           </form>
         </div>

@@ -108,7 +108,6 @@ export const getUserBookings = async (req, res) => {
 // GET BOOKINGS FOR Agency [GET "/agency"]
 export const getAgencyBookings = async (req, res) => {
   try {
-    const user = req.user._id;
     const agency = await Agency.findOne({ owner: req.user._id });
     if (!agency) {
       return res.status(404).json({ success: false, message: "Agency not found for this user" });

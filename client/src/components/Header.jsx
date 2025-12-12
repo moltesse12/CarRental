@@ -3,7 +3,28 @@ import { Link, useLocation } from "react-router-dom";
 import { assets } from "../assets/data";
 import Navbar from "./Navbar";
 import { useClerk, UserButton } from "@clerk/clerk-react";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../hooks/useAppContext";
+
+// BookingIcon défini en dehors du composant pour éviter sa recréation à chaque rendu
+const BookingIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="lucide lucide-calendar"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
 
 const Header = () => {
   const { navigate, user, isOwner, setShowAgencyReg, searchQuery, setSearchQuery } =
@@ -13,26 +34,6 @@ const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
   const location = useLocation();
   const { openSignIn } = useClerk();
-
-  const BookingIcon = () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 36 36"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="lucide lucide-scroll-text-icon lucide-scroll-text"
-    >
-      <path d="M15 M12-h5" />
-      <path d="M15 8h-5" />
-      <path d="M19 17V5a2 2 0 0 0-2-2H4" />
-      <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v" />
-    </svg>
-  );
 
   const isHomePage = location.pathname.endsWith("/");
 
@@ -96,7 +97,7 @@ const Header = () => {
                 onClick={() => (isOwner ? navigate("/owner") : setShowAgencyReg(true))}
                 className="btn-outline px-2 py-1 text-xs font-semibold ring-primary bg-transparent"
               >
-                {isOwner ? "Dashboard" : "Register as Agency"}
+                {isOwner ? "Tableau de bord" : "S'enregistrer comme agence"}
               </button>
             )}
             {/* Searchbar */}
@@ -111,14 +112,14 @@ const Header = () => {
                   onChange={handleSearchChange}
                   value={searchQuery}
                   type="text"
-                  placeholder="Type here..."
+                  placeholder="Taper ici..."
                   className="w-full text-sm outline-none pr-10 placeholder:text-gray-400"
                 />
               </div>
               {/* Toggle Button */}
               <div
                 onClick={() => setShowSearch(prev => !prev)}
-                className="absolute right-0 ring-1 ring-slate-900/10 bg-white p-[8px] rounded-full cursor-pointer z-10"
+                className="absolute right-0 ring-1 ring-slate-900/10 bg-white p-2 rounded-full cursor-pointer z-10"
               >
                 <img src={assets.search} alt="" />
               </div>
@@ -156,7 +157,7 @@ const Header = () => {
                 >
                   <UserButton.MenuItems>
                     <UserButton.Action
-                      label="My Bookings"
+                      label="Mes réservations"
                       labelIcon={<BookingIcon />}
                       onClick={() => navigate("/my-bookings")}
                     />
@@ -168,7 +169,7 @@ const Header = () => {
                   className="btn-solid bg-black flexCenter gap-2 rounded-full"
                 >
                   {" "}
-                  Login
+                  Connexion
                   <img src={assets.user} alt="userIcon" className="invert" />
                 </button>
               )}

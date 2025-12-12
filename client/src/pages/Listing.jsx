@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import Item from "./../components/Item";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../hooks/useAppContext";
 
 const Listing = () => {
   const { cars, searchQuery, currency } = useAppContext();
@@ -15,11 +15,28 @@ const Listing = () => {
   const [searchParams] = useSearchParams();
   const heroDestination = (searchParams.get("destination") || "").toLowerCase().trim();
 
-  const sortOptions = ["Relevant", "Low To High", "High to Low"];
+  const sortOptions = ["Pertinent", "Prix croissant", "Prix décroissant"];
 
   const bodyType = ["Coupe", "SUV", "Hatchback", "Sedan", "Convertible", "Van", "Grand Tourer"];
 
+  const bodyTypeLabels = {
+    Coupe: "Coupé",
+    SUV: "SUV",
+    Hatchback: "Berline compacte",
+    Sedan: "Berline",
+    Convertible: "Cabriolet",
+    Van: "Monospace",
+    "Grand Tourer": "Grand Tourer",
+  };
+
   const priceRange = ["0 to 20000", "20000 to 30000", "30000 to 50000", "50000 to 99000"];
+
+  const priceRangeLabels = {
+    "0 to 20000": "0 à 20000",
+    "20000 to 30000": "20000 à 30000",
+    "30000 to 50000": "30000 à 50000",
+    "50000 to 99000": "50000 à 99000",
+  };
 
   const handleFilterChange = (checked, value, type) => {
     setSelectedFilters(prev => {
@@ -33,43 +50,43 @@ const Listing = () => {
     });
   };
 
-  const sortCars = (a, b) => {
-    if (selectedSort === "Low To High") return a.price.sale - b.price.sale;
-    if (selectedSort === "High to Low") return b.price.sale - a.price.sale;
-    return 0;
-  };
-
-  const matchesPrice = car => {
-    if (selectedFilters.priceRange.length === 0) return true;
-    return selectedFilters.priceRange.some(range => {
-      const [minStr, maxStr] = range.split("to");
-      const min = Number(minStr?.trim() || 0);
-      const max = Number(maxStr?.trim() || Infinity);
-      return car.price?.sale >= min && car.price?.sale <= max;
-    });
-  };
-
-  const matchesType = car => {
-    if (selectedFilters.bodyType.length === 0) return true;
-    return selectedFilters.bodyType.includes(car.bodyType);
-  };
-
-  const matchesSearch = car => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      (car.title || "").toLowerCase().includes(q) ||
-      (car.city || "").toLowerCase().includes(q) ||
-      (car.country || "").toLowerCase().includes(q)
-    );
-  };
-
-  const matchesHeroDestination = car => {
-    if (!heroDestination) return true;
-    return (car.city || "").toLowerCase().includes(heroDestination);
-  };
-
   const filteredCars = useMemo(() => {
+    const sortCars = (a, b) => {
+      if (selectedSort === "Prix croissant") return a.price.sale - b.price.sale;
+      if (selectedSort === "Prix décroissant") return b.price.sale - a.price.sale;
+      return 0;
+    };
+
+    const matchesPrice = car => {
+      if (selectedFilters.priceRange.length === 0) return true;
+      return selectedFilters.priceRange.some(range => {
+        const [minStr, maxStr] = range.split(" to ");
+        const min = Number(minStr?.trim() || 0);
+        const max = Number(maxStr?.trim() || Infinity);
+        return car.price?.sale >= min && car.price?.sale <= max;
+      });
+    };
+
+    const matchesType = car => {
+      if (selectedFilters.bodyType.length === 0) return true;
+      return selectedFilters.bodyType.includes(car.bodyType);
+    };
+
+    const matchesSearch = car => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        (car.title || "").toLowerCase().includes(q) ||
+        (car.city || "").toLowerCase().includes(q) ||
+        (car.country || "").toLowerCase().includes(q)
+      );
+    };
+
+    const matchesHeroDestination = car => {
+      if (!heroDestination) return true;
+      return (car.city || "").toLowerCase().includes(heroDestination);
+    };
+
     return cars
       .filter(c => {
         return matchesType(c) && matchesPrice(c) && matchesSearch(c) && matchesHeroDestination(c);
@@ -92,7 +109,7 @@ const Listing = () => {
         <div className="flex flex-col sm:flex-row gap-6">
           <div className="min-w-72 bg-white p-4 pl-6 lg:p-12 rounded-r-xl my-4">
             <div className="py-3">
-              <h5 className="mb-3">Sort By</h5>
+              <h5 className="mb-3">Trier par</h5>
               <select
                 value={selectedSort}
                 onChange={e => setSelectedSort(e.target.value)}
@@ -107,7 +124,7 @@ const Listing = () => {
             </div>
 
             <div className="p-5 mt-5 bg-primary rounded-xl">
-              <h5 className="mb-4">Car Type</h5>
+              <h5 className="mb-4">Type de voiture</h5>
               {bodyType.map(type => (
                 <label key={type} className={"flex gap-2 text-sm font-semibold text-gray-50 mb-1"}>
                   <input
@@ -115,13 +132,13 @@ const Listing = () => {
                     checked={selectedFilters.bodyType.includes(type)}
                     onChange={e => handleFilterChange(e.target.checked, type, "bodyType")}
                   />
-                  {type}
+                  {bodyTypeLabels[type]}
                 </label>
               ))}
             </div>
 
             <div className="p-5 mt-5 bg-primary rounded-xl">
-              <h5 className="mb-4">Price Range</h5>
+              <h5 className="mb-4">Gamme de prix</h5>
               {priceRange.map(price => (
                 <label key={price} className={"flex gap-2 text-sm font-semibold text-gray-50 mb-1"}>
                   <input
@@ -130,7 +147,7 @@ const Listing = () => {
                     onChange={e => handleFilterChange(e.target.checked, price, "priceRange")}
                   />
                   {currency}
-                  {price}
+                  {priceRangeLabels[price]}
                 </label>
               ))}
             </div>
@@ -141,7 +158,7 @@ const Listing = () => {
               {paginatedCars && paginatedCars.length > 0 ? (
                 paginatedCars.map(car => <Item key={car._id} car={car} />)
               ) : (
-                <p className="capitalize">No Cars found for selected filters.</p>
+                <p className="capitalize">Aucune voiture trouvée pour les filtres sélectionnés.</p>
               )}
             </div>
 
@@ -153,7 +170,7 @@ const Listing = () => {
                   currPage === 1 && "opacity-50 cursor-not-allowed"
                 }`}
               >
-                Previous
+                Précédent
               </button>
 
               {Array.from({ length: totalPages }, (_, index) => (
@@ -175,7 +192,7 @@ const Listing = () => {
                   currPage === totalPages && "opacity-50 cursor-not-allowed"
                 }`}
               >
-                Next
+                Suivant
               </button>
             </div>
           </div>

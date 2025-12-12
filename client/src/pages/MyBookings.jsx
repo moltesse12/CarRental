@@ -1,52 +1,39 @@
-import React, { useEffect, useState } from "react";
-import { assets} from "../assets/data";
+import React, { useEffect, useState, useCallback } from "react";
+import { assets } from "../assets/data";
 import Title from "./../components/common/Title";
-import {useAppContext} from "../context/AppContext.jsx"
+import { useAppContext } from "../hooks/useAppContext";
 import toast from "react-hot-toast";
 
-
 const MyBookings = () => {
-
-const {currency,user,axios,getToken} = useAppContext()
+  const { currency, user, axios, getToken } = useAppContext();
   const [bookings, setBookings] = useState([]);
 
-  const getUserBooking = async () => {
+  const getUserBooking = useCallback(async () => {
     try {
-      const {data} = await axios.get('/api/bookings/user', {header:{Authorization:`Bearer ${await getToken()}`}} );
-      if(data.success){
+      const { data } = await axios.get("/api/bookings/user", {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
+      if (data.success) {
         setBookings(data.bookings);
-      }else{
-        toast.error(data.message)
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
-  };
-  // STRIPE PAYMENT
-  // const handlePayment =async (bookingId)=>{
-  //   try {
-  //     const {data} = await axios.post('/api/bookings/stripe',{bookingId}, {Headers:{Authorization:`Beare ${await getToken()}`}})
-  //     if (data.success) {
-  //       window.location.href = data.url
-  //     }else{
-  //       toast.error(data.message)
-  //     }
-  //   } catch (error) {
-  //     toast.error(error.message)
-
-  //   }
-  // }
+  }, [axios, getToken]);
 
   useEffect(() => {
     if (user) {
       getUserBooking();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return (
     <div className="bg-primary py-16 pt-28">
       <div className="max-padd-container">
-        <Title title2={"My Bookings"} title2Styles={"text-4xl"} titleStyles={"mb-10"} />
+        <Title title2={"Mes réservations"} title2Styles={"text-4xl"} titleStyles={"mb-10"} />
 
         {bookings?.map(booking => (
           <div key={booking._id} className="bg-white ring-1 ring-slate-900/5 p-4 mt-3 rounded-lg">
@@ -65,12 +52,12 @@ const {currency,user,axios,getToken} = useAppContext()
 
                 <div className="flex gap-4 mt-1">
                   <div className="flex items-center gap-x-2">
-                    <h5>Seats:</h5>
+                    <h5>Places :</h5>
                     <p>{booking.car.specs.seats}</p>
                   </div>
 
                   <div className="flex items-center gap-x-2">
-                    <h5>Total:</h5>
+                    <h5>Total :</h5>
                     <p>
                       {currency}
                       {booking.totalPrice}
@@ -89,19 +76,19 @@ const {currency,user,axios,getToken} = useAppContext()
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 border-t border-gray-300 pt-3 mt-2">
                   <div className="flex gap-4 flex-wrap">
                     <div className="flex items-center gap-x-2">
-                      <h5>Booking ID:</h5>
+                      <h5>ID de réservation :</h5>
                       <p className="text-gray-400 text-xs">{booking._id}</p>
                     </div>
 
                     <div className="flex items-center gap-x-2">
-                      <h5>Pick-Up:</h5>
+                      <h5>Retrait :</h5>
                       <p className="text-gray-400 text-xs">
                         {new Date(booking.pickUpDate).toDateString()}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-x-2">
-                      <h5>Drop-Off:</h5>
+                      <h5>Restitution :</h5>
                       <p className="text-gray-400 text-xs">
                         {new Date(booking.dropOffDate).toDateString()}
                       </p>
@@ -110,21 +97,24 @@ const {currency,user,axios,getToken} = useAppContext()
 
                   <div className="flex gap-3 items-center">
                     <div className="flex items-center gap-x-2">
-                      <h5>Payment:</h5>
+                      <h5>Paiement :</h5>
                       <div className="flex items-center gap-1">
                         <span
                           className={`min-w-2.5 h-2.5 rounded-full ${
                             booking.isPaid ? "bg-green-500" : "bg-yellow-500"
                           }`}
                         />
-                        <p>{booking.isPaid ? "Paid" : "UnPaid"}</p>
+                        <p>{booking.isPaid ? "Payé" : "Non payé"}</p>
                       </div>
                     </div>
 
                     {!booking.isPaid && (
                       <button
-                      // onClick={()=> handlePayment(booking._id)}
-                      className="btn-solid !py-1 !text-xs rounded-sm">Pay Now</button>
+                        // onClick={()=> handlePayment(booking._id)}
+                        className="btn-solid !py-1 !text-xs rounded-sm"
+                      >
+                        Payer maintenant
+                      </button>
                     )}
                   </div>
                 </div>

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { useAppContext } from "../../context/AppContext";
+import { useAppContext } from "../../hooks/useAppContext";
 import { assets, cities } from "../../assets/data";
 import toast from "react-hot-toast";
 
 const AgencyReg = () => {
-  const {setShowAgencyReg, axios, getToken, setIsOwner} = useAppContext();
+  const { setShowAgencyReg, axios, getToken, setIsOwner } = useAppContext();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [contact, setContact] = useState("");
@@ -14,17 +14,21 @@ const AgencyReg = () => {
   const onSubmitHandler = async event => {
     try {
       event.preventDefault();
-      const { data } = await axios.post("/api/agencies",{name, email, contact, address, city}, {
-        Headers: {
-          Authorization: `Bearer ${await getToken()}`,
-        },
-      });
-      if(data.success){
-        toast.success(data.message)
+      const { data } = await axios.post(
+        "/api/agencies",
+        { name, email, contact, address, city },
+        {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+          },
+        }
+      );
+      if (data.success) {
+        toast.success(data.message);
         setIsOwner(true);
         setShowAgencyReg(false);
-      }else{
-        toast.error(data.message)
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
       toast.error(error.message);
@@ -55,11 +59,11 @@ const AgencyReg = () => {
             alt=""
             className="absolute top-4 right-4 h-6 w-6 p-1 cursor-pointer bg-solid/50 rounded-full shadow-md"
           />
-          <h3 className="mb-6">Register Agency</h3>
+          <h3 className="mb-6">Enregistrement de l'agence</h3>
           <div className="flex gap-2 xl:gap-3">
             <div>
               <label htmlFor="name" className="text-sm font-semibold">
-                Agency Name
+                Nom de l'agence
               </label>
               <input
                 onChange={e => setName(e.target.value)}
@@ -80,7 +84,7 @@ const AgencyReg = () => {
                 value={contact}
                 id="contact"
                 type="text"
-                placeholder="Type here..."
+                placeholder="Taper ici..."
                 required
                 className="border bg-primary border-slate-900/10 rounded-lg w-full px-3 py-1.5 mt-1 outline-none "
               />
@@ -95,28 +99,28 @@ const AgencyReg = () => {
               value={email}
               id="email"
               type="text"
-              placeholder="Type here..."
+              placeholder="Taper ici..."
               required
               className="border bg-primary border-slate-900/10 rounded-lg w-full px-3 py-1.5 mt-1 outline-none "
             />
           </div>
           <div className="w-full mt-4">
             <label htmlFor="address" className="text-sm font-semibold">
-              Address
+              Adresse
             </label>
             <input
               onChange={e => setAddress(e.target.value)}
               value={address}
               id="address"
               type="text"
-              placeholder="Type here..."
+              placeholder="Taper ici..."
               required
               className="border bg-primary border-slate-900/10 rounded-lg w-full px-3 py-1.5 mt-1 outline-none "
             />
           </div>
           <div className="w-full mt-4 max-w-60 mr-auto">
             <label htmlFor="city" className="text-sm font-semibold">
-              City
+              Ville
             </label>
             <select
               onChange={e => setCity(e.target.value)}
@@ -124,7 +128,7 @@ const AgencyReg = () => {
               required
               className="border bg-primary border-slate-900/10 rounded-lg w-full px-3 py-1.5 mt-1 outline-none "
             >
-              <option value="">Select City</option>
+              <option value="">Sélectionner une ville</option>
               {cities.map(city => (
                 <option key={city} value={city}>
                   {city}
@@ -132,7 +136,9 @@ const AgencyReg = () => {
               ))}
             </select>
           </div>
-          <button type="submit" className="btn-solid py-2 rounded-lg w-32 mt-6">Register</button>
+          <button type="submit" className="btn-solid py-2 rounded-lg w-32 mt-6">
+            S'enregistrer
+          </button>
         </div>
       </form>
     </div>

@@ -19,20 +19,20 @@ cloudinary.config({
 
 // Image filenames (these should match actual files in server/images/)
 const imageFiles = {
-  img1: "img1.jpg",
-  img2: "img2.jpg",
-  img3: "img3.jpg",
-  img4: "img4.jpg",
-  img5: "img5.jpg",
-  img6: "img6.jpg",
-  img7: "img7.jpg",
-  img8: "img8.jpg",
-  img9: "img9.jpg",
-  img10: "img10.jpg",
-  img11: "img11.jpg",
-  cImg2: "cImg2.jpg",
-  cImg3: "cImg3.jpg",
-  cImg4: "cImg4.jpg",
+  img1: "img1.png",
+  img2: "img2.png",
+  img3: "img3.png",
+  img4: "img4.png",
+  img5: "img5.png",
+  img6: "img6.png",
+  img7: "img7.png",
+  img8: "img8.png",
+  img9: "img9.png",
+  img10: "img10.png",
+  img11: "img11.png",
+  cImg2: "cImg2.png",
+  cImg3: "cImg3.png",
+  cImg4: "cImg4.png",
 };
 
 export const dummyCars = [
@@ -63,7 +63,7 @@ export const dummyCars = [
       "Heated Seats",
       "Sunroof",
     ],
-    images: ["img1.jpg", "cImg2.jpg", "cImg3.jpg", "cImg4.jpg"],
+    images: ["img1.png", "cImg2.png", "cImg3.png", "cImg4.png"],
     isAvailable: true,
     status: "available",
   },
@@ -94,7 +94,7 @@ export const dummyCars = [
       "Parking Assist",
       "Cruise Control",
     ],
-    images: ["img2.jpg", "cImg3.jpg", "cImg4.jpg", "cImg2.jpg"],
+    images: ["img2.png", "cImg3.png", "cImg4.png", "cImg2.png"],
     isAvailable: true,
     status: "available",
   },
@@ -125,7 +125,7 @@ export const dummyCars = [
       "Parking Assist",
       "Rear Camera",
     ],
-    images: ["img3.jpg", "cImg4.jpg", "cImg3.jpg", "cImg2.jpg"],
+    images: ["img3.png", "cImg4.png", "cImg3.png", "cImg2.png"],
     isAvailable: true,
     status: "available",
   },
@@ -156,7 +156,7 @@ export const dummyCars = [
       "Cruise Control",
       "Apple CarPlay",
     ],
-    images: ["img4.jpg", "cImg2.jpg", "cImg3.jpg", "cImg4.jpg"],
+    images: ["img4.png", "cImg2.png", "cImg3.png", "cImg4.png"],
     isAvailable: true,
     status: "available",
   },
@@ -187,7 +187,7 @@ export const dummyCars = [
       "Sunroof",
       "Parking Assist",
     ],
-    images: ["img8.jpg", "cImg2.jpg", "cImg4.jpg", "cImg3.jpg"],
+    images: ["img8.png", "cImg2.png", "cImg4.png", "cImg3.png"],
     isAvailable: true,
     status: "available",
   },
@@ -218,7 +218,7 @@ export const dummyCars = [
       "Keyless Entry",
       "Heated Seats",
     ],
-    images: ["img5.jpg", "cImg3.jpg", "cImg2.jpg", "cImg4.jpg"],
+    images: ["img5.png", "cImg3.png", "cImg2.png", "cImg4.png"],
     isAvailable: true,
     status: "available",
   },
@@ -249,7 +249,7 @@ export const dummyCars = [
       "Adaptive Cruise",
       "Cruise Control",
     ],
-    images: ["img6.jpg", "cImg2.jpg", "cImg3.jpg", "cImg4.jpg"],
+    images: ["img6.png", "cImg2.png", "cImg3.png", "cImg4.png"],
     isAvailable: true,
     status: "available",
   },
@@ -280,7 +280,7 @@ export const dummyCars = [
       "Apple CarPlay",
       "Keyless Entry",
     ],
-    images: ["img7.jpg", "cImg3.jpg", "cImg4.jpg", "cImg2.jpg"],
+    images: ["img7.png", "cImg3.png", "cImg4.png", "cImg2.png"],
     isAvailable: true,
     status: "available",
   },
@@ -311,7 +311,7 @@ export const dummyCars = [
       "Keyless Entry",
       "Cruise Control",
     ],
-    images: ["img9.jpg", "cImg3.jpg", "cImg4.jpg", "cImg2.jpg"],
+    images: ["img9.png", "cImg3.png", "cImg4.png", "cImg2.png"],
     isAvailable: true,
     status: "available",
   },
@@ -342,7 +342,7 @@ export const dummyCars = [
       "Sunroof",
       "Cruise Control",
     ],
-    images: ["img10.jpg", "cImg4.jpg", "cImg3.jpg", "cImg2.jpg"],
+    images: ["img10.png", "cImg4.png", "cImg3.png", "cImg2.png"],
     isAvailable: true,
     status: "available",
   },
@@ -373,7 +373,7 @@ export const dummyCars = [
       "Parking Assist",
       "Cruise Control",
     ],
-    images: ["img11.jpg", "cImg3.jpg", "cImg4.jpg", "img2.jpg"],
+    images: ["img11.png", "cImg3.png", "cImg4.png", "img2.png"],
     isAvailable: true,
     status: "available",
   },
@@ -382,16 +382,37 @@ export const dummyCars = [
 async function bulkUpload() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(`${process.env.MONGO_URI}/Car-Rental`);
+    await mongoose.connect(`${process.env.MONGO_URI}/CarRental`);
     console.log("Connected to MongoDB");
 
-    // Get agency owner from DB
-    const owner = await User.findOne({ role: "agencyOwner" });
-    if (!owner) throw new Error("No agency owner found in DB");
+    // Get or create agency owner
+    let owner = await User.findOne({ role: "agencyOwner" });
+    if (!owner) {
+      console.log("Creating test agency owner...");
+      owner = await User.create({
+        _id: "test-owner-" + Date.now(),
+        username: "agencyOwner",
+        email: "owner@carrental.com",
+        image: "https://via.placeholder.com/150",
+        role: "agencyOwner",
+      });
+      console.log(`✓ Created agency owner: ${owner.username}`);
+    }
 
-    // Get agency by owner
-    const agency = await Agency.findOne({ owner: owner._id });
-    if (!agency) throw new Error("No agency found in DB");
+    // Get or create agency
+    let agency = await Agency.findOne({ owner: owner._id });
+    if (!agency) {
+      console.log("Creating test agency...");
+      agency = await Agency.create({
+        name: "Premium Auto Rentals",
+        address: "123 Business Avenue, Business City, USA",
+        contact: "+1-555-0123",
+        email: "info@premiumautorentals.com",
+        owner: owner._id,
+        city: "Business City",
+      });
+      console.log(`✓ Created agency: ${agency.name}`);
+    }
 
     console.log(`Using Agency: ${agency.name} | Owner: ${owner.username}`);
 

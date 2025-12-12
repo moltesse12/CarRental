@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const carSchema = new mongoose.Schema(
   {
-    agency: { type: String, ref: "Agency", required: true },
+    agency: { type: mongoose.Schema.Types.ObjectId, ref: "Agency", required: true },
     title: { type: String, required: true },
     description: { type: String, required: true },
     city: { type: String, required: true },
-    country: { type: String, ref: "User", required: true },
+    country: { type: String, required: true },
     address: { type: String, required: true },
     odometer: { type: Number, required: true },
     bodyType: { type: String, required: true },
@@ -16,11 +16,12 @@ const carSchema = new mongoose.Schema(
     },
     specs: {
       transmission: { type: String, required: true },
-      seats: { type: String, required: true },
+      seats: { type: Number, required: true },
       fuelType: { type: String, required: true },
     },
-    featured: { type: Array, required: true },
-    images: { type: String },
+    featured: { type: Boolean, default: false },
+    features: [{ type: String }],
+    images: [{ type: String }],
     isAvailable: { type: Boolean, default: true },
   },
   { timestamps: true }

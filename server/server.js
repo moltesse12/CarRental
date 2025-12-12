@@ -22,20 +22,23 @@ const app = express();
 app.use(cors());
 
 // API to listen stripe Webhooks
-{ /*app.post('/api/stripe',express({type:"application/json"}), stripeWebhooks)
-*/}
-// Middleware
+{
+  /*app.post('/api/stripe',express({type:"application/json"}), stripeWebhooks)
+   */
+}
+// API to listen to Clerk Webhooks
+// Register the raw body route BEFORE express.json() so the raw payload is available for Svix verification.
+app.post("/api/clerk", express.raw({ type: "application/json" }), clerkWebhooks);
+
+// Middleware for other routes
 app.use(express.json());
 app.use(clerkMiddleware());
-
-// API to listen to Clerk Webhooks
-app.use("/api/clerk", clerkWebhooks);
 
 // Define API Route
 app.use("/api/user", userRouter);
 app.use("/api/agencies", agencyRouter);
 app.use("/api/cars", carRouter);
-app.use('/api/bookings', bookingRouter);
+app.use("/api/bookings", bookingRouter);
 
 // Route Endpoint to Check API status
 app.get("/", (req, res) => res.send("Mr Folly your API Succeessfully Connected"));

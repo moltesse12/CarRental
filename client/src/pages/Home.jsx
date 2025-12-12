@@ -4,7 +4,7 @@ import FeaturedCars from './../components/FeaturedCars';
 import About from './../components/About';
 import Banner from './../components/Banner';
 import Testimonial from './../components/Testimonial';
-import TopPicks from './../components/TopPicks';
+// import TopPicks from './../components/TopPicks';
 
 
 const Home = () => {
@@ -12,7 +12,7 @@ const Home = () => {
     <div>
       <Hero />
       <About />
-      <TopPicks />
+      {/* <TopPicks /> */}
       <FeaturedCars />
       <Banner />
       <Testimonial />

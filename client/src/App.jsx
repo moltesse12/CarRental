@@ -16,7 +16,7 @@ import ListCar from "./pages/owner/ListCar";
 import { Toaster } from "react-hot-toast";
 import { useAppContext } from "./context/AppContext";
 import AgencyReg from "./components/owner/AgencyReg";
-import Processing from "./pages/processing";
+import Processing from "./pages/Processing";
 
 const App = () => {
   const { showAgencyReg } = useAppContext();
@@ -35,7 +35,7 @@ const App = () => {
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/my-bookings" element={<MyBookings />} />
-        <Route path="/processing/:nextUrl" element={<Processing/>} />
+        <Route path="/processing/:nextUrl" element={<Processing />} />
         <Route path="/owner" element={<Sidebar />}>
           <Route index element={<Dashboard />} />
           <Route path="/owner/add-car" element={<AddCar />} />

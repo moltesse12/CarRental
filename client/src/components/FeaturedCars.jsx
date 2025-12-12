@@ -9,10 +9,10 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 // import required modules
 import { Autoplay } from "swiper/modules";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../hooks/useAppContext";
 
 const FeaturedCars = () => {
-  const {cars} = useAppContext();
+  const { cars } = useAppContext();
   const [featured, setFeatured] = useState([]);
 
   useEffect(() => {
@@ -22,13 +22,13 @@ const FeaturedCars = () => {
   return (
     <section className="max-padd-container py-16 xl:py-22">
       <Title
-        title1={"YOUR Next Car Awaits"}
-        title2={"Start Driving With Ease"}
+        title1={"Votre prochaine voiture vous attend"}
+        title2={"Commencez à conduire avec facilité"}
         titleStyles={"mb-10"}
       />
       <div className="flexBetween mt-8 mb-6">
         <h5>
-          <span className="font-bold">Displaying 1-6</span> from 3k Listings
+          <span className="font-bold">Affichage 1-6</span> sur 3k annonces
         </h5>
         <Link
           to={"/Listing"}

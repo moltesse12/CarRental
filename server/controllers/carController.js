@@ -19,9 +19,10 @@ export const addNewCar = async (req, res) => {
       seats,
       fuelType,
       featured,
+      features,
     } = req.body;
 
-    const agency = await Agency.findOne({ owner: req.auth().userId });
+    const agency = await Agency.findOne({ owner: req.user._id });
 
     if (!agency) {
       return res.status(404).json({ message: "Agency not found" });
@@ -58,9 +59,9 @@ export const addNewCar = async (req, res) => {
       features: JSON.parse(features),
       images,
     });
-    res.status(201).json({ message: "New car added successfully" });
+    res.status(201).json({ success: true, message: "New car added successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ success: false, message: "Server Error", error: error.message });
   }
 };
 
@@ -81,7 +82,7 @@ export const getAllAvailableCars = async (req, res) => {
 
 export const getOwnerCars = async (req, res) => {
   try {
-    const agencyData = await Agency.findOne({ owner: req.auth().userId });
+    const agencyData = await Agency.findOne({ owner: req.user._id });
     const cars = await Car.find({ agency: agencyData._id.toString() }).populate("agency");
     res.status(200).json({ success: true, cars });
   } catch (error) {
@@ -92,7 +93,7 @@ export const getOwnerCars = async (req, res) => {
 // TOGGLE AVAILABILITY STATUS OF A CAR [POST "/cars/toggle-availability"]
 export const toggleCarAvailability = async (req, res) => {
   try {
-    const { carId } = req.params;
+    const { carId } = req.body;
     const carData = await Car.findById(carId);
     carData.isAvailable = !carData.isAvailable;
     await carData.save();

@@ -3,10 +3,10 @@ import { NavLink } from "react-router-dom";
 
 const Navbar = ({ setMenuOpened, containerStyles }) => {
   const navLinks = [
-    { path: "/", title: "Home" },
-    { path: "/listing", title: "Listing" },
+    { path: "/", title: "Accueil" },
+    { path: "/listing", title: "Annonces" },
     { path: "blog", title: "Blog" },
-    { path: "/contact", title: "Contact" },
+    { path: "/contact", title: "Nous contacter" },
   ];
   return (
     <nav className={containerStyles}>
