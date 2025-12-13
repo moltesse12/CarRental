@@ -26,6 +26,11 @@ const CarDetails = () => {
       // check is pickUpDate is greater than dropOffDate
       if (pickUpDate > dropOffDate) {
         toast.error("La date de retrait ne peut pas être supérieure à la date de restitution");
+        return;
+      }
+      if (!pickUpDate || !dropOffDate) {
+        toast.error("Veuillez sélectionner les dates de retrait et de restitution");
+        return;
       }
       const { data } = await axios.post("/api/bookings/check-availability", {
         car: id,
@@ -94,7 +99,7 @@ const CarDetails = () => {
                 <h3>{car.title}</h3>
                 <h4>
                   {currency}
-                  {car.price.sale} | {car.price.rent}.00/jour
+                  {car.price?.sale || 0} | {car.price?.rent || 0}.00/jour
                 </h4>
               </div>
               <div className="flex justify-between items-start my-1">
@@ -111,15 +116,15 @@ const CarDetails = () => {
               <div className="flex gap-x-4 mt-3">
                 <p className="flexCenter gap-x-2 border-r border-slate-900/50 pr-4 font-medium">
                   <img src={assets.transmission} alt="" width={18} />
-                  {car.specs.transmission}
+                  {car.specs?.transmission || "N/A"}
                 </p>
                 <p className="flexCenter gap-x-2 border-r border-slate-900/50 pr-4 font-medium">
                   <img src={assets.seats} alt="" width={18} />
-                  {car.specs.seats}
+                  {car.specs?.seats || "N/A"}
                 </p>
                 <p className="flexCenter gap-x-2 border-r border-slate-900/50 pr-4 font-medium">
                   <img src={assets.fuelType} alt="" width={18} />
-                  {car.specs.fuelType}
+                  {car.specs?.fuelType || "N/A"}
                 </p>
                 <p className="flexCenter gap-x-2 border-r border-slate-900/50 pr-4 font-medium">
                   <img src={assets.odometer} alt="" width={18} />
@@ -132,11 +137,15 @@ const CarDetails = () => {
               </div>
               <h4 className="mt-6 mb-2">Caractéristiques</h4>
               <div className="flex gap-3 flex-wrap">
-                {car.features.map(feature => (
-                  <p key={feature} className="p-3 py-1 rounded-lg bg-primary">
-                    {feature}
-                  </p>
-                ))}
+                {car.features && car.features.length > 0 ? (
+                  car.features.map((feature, index) => (
+                    <p key={index} className="p-3 py-1 rounded-lg bg-primary">
+                      {typeof feature === 'string' ? feature : feature.name || feature}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-gray-400">Aucune caractéristique disponible</p>
+                )}
               </div>
               {/* FORM */}
               <form
@@ -176,33 +185,40 @@ const CarDetails = () => {
                 </button>
               </form>
               {/* CONTACT Agency */}
-              <div className="p-6 bg-primary rounded-xl mt-10 max-w-sm">
-                <h4 className="mb-3">Pour l'achat, contactez</h4>
-                <div className="text-sm sm:w-80 divide-y divide-gray-500/30 ring-1 ring-slate-900/10 rounded">
-                  <div className="flex items-start justify-between p-3">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <h5>{car.agency.name}</h5>
-                        <p className="bg-green-500/20 px-2 py-0.5 rounded-full text-xs text-green-600 border border-green-500/30 ">
-                          Agence
-                        </p>
+              {car.agency && (
+                <div className="p-6 bg-primary rounded-xl mt-10 max-w-sm">
+                  <h4 className="mb-3">Pour l'achat, contactez</h4>
+                  <div className="text-sm sm:w-80 divide-y divide-gray-500/30 ring-1 ring-slate-900/10 rounded">
+                    <div className="flex items-start justify-between p-3">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h5>{car.agency.name || "Agence"}</h5>
+                          <p className="bg-green-500/20 px-2 py-0.5 rounded-full text-xs text-green-600 border border-green-500/30 ">
+                            Agence
+                          </p>
+                        </div>
+                        <p>Bureau d'agence</p>
                       </div>
-                      <p>Bureau d'agence</p>
+                      {car.agency.owner?.image && (
+                        <img src={car.agency.owner.image} alt="" className="h-10 w-10 rounded-full" />
+                      )}
                     </div>
-                    <img src={car.agency.owner.image} alt="" className="h-10 w-10 rounded-full" />
-                  </div>
-                  <div className="flexStart gap-2 p-1.5">
-                    <div className="bg-green-500/20 p-1 rounded-full border border-green-500/30">
-                      <img src={assets.phone} alt="" width={14} />
-                    </div>
-                    <p>{car.agency.contact}</p>
-                  </div>
-                  <div className="flexStart gap-2 p-1.5">
-                    <div className="bg-green-500/20 p-1 rounded-full border border-green-500/30">
-                      <img src={assets.mail} alt="" width={14} />
-                    </div>
-                    <p>{car.agency.mail}</p>
-                  </div>
+                    {car.agency.contact && (
+                      <div className="flexStart gap-2 p-1.5">
+                        <div className="bg-green-500/20 p-1 rounded-full border border-green-500/30">
+                          <img src={assets.phone} alt="" width={14} />
+                        </div>
+                        <p>{car.agency.contact}</p>
+                      </div>
+                    )}
+                    {(car.agency.email || car.agency.mail) && (
+                      <div className="flexStart gap-2 p-1.5">
+                        <div className="bg-green-500/20 p-1 rounded-full border border-green-500/30">
+                          <img src={assets.mail} alt="" width={14} />
+                        </div>
+                        <p>{car.agency.email || car.agency.mail}</p>
+                      </div>
+                    )}
                   <div className="flex items-center divide-x divide-gray-500/30">
                     <button className="flex items-center justify-center gap-2 w-1/2 py-3 cursor-pointer">
                       <img src={assets.mail} alt="" width={19} />
@@ -214,6 +230,7 @@ const CarDetails = () => {
                   </div>
                 </div>
               </div>
+              )}
             </div>
             {/* IMAGE RIGHT SIDE */}
             <div className="flex flex-[4] w-full bg-white p-4 rounded-xl my-4">

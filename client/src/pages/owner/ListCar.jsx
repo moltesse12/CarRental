@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { useUser } from "@clerk/clerk-react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAppContext } from "../../hooks/useAppContext";
 import toast from "react-hot-toast";
 
@@ -7,7 +6,7 @@ const ListCar = () => {
   const { axios, getToken, user, currency } = useAppContext();
   const [cars, setCars] = useState([]);
 
-  const getCars = async () => {
+  const getCars = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/cars/owner", {
         headers: {
@@ -22,7 +21,7 @@ const ListCar = () => {
     } catch (error) {
       toast.error(error.message);
     }
-  };
+  }, [axios, getToken]);
 
   // TOGGLE AVAILABLE OF THE CAR
   const toggleAvailability = async carId => {
@@ -51,7 +50,7 @@ const ListCar = () => {
     if (user) {
       getCars();
     }
-  }, [user]);
+  }, [user, getCars]);
   return (
     <div className="md:px-8 py-6 m-1 sm:m-3 h-[97vh] overflow-y-scroll lg:w-11/12 shadow rounded-xl">
       {/* ALL CARS */}
@@ -72,14 +71,18 @@ const ListCar = () => {
           <div className="hidden lg:block">{index + 1}</div>
           <div className="flexStart gap-x-2 max-w-64">
             <div className="overflow-hidden rounded-lg">
-              <img src={car.images[0]} alt={car.title} className="w-16 rounded-lg" />
+              {car.images && car.images.length > 0 ? (
+                <img src={car.images[0]} alt={car.title || "Voiture"} className="w-16 rounded-lg" />
+              ) : (
+                <div className="w-16 h-16 bg-gray-200 rounded-lg flexCenter text-xs text-gray-400">N/A</div>
+              )}
             </div>
-            <div className="line-clamp-2">{car.title}</div>
+            <div className="line-clamp-2">{car.title || "Voiture"}</div>
           </div>
-          <div>{car.address}</div>
+          <div>{car.address || "N/A"}</div>
           <div>
             {currency}
-            {car.price.sale}
+            {car.price?.sale || 0}
           </div>
           <label className="relative inline-flex items-center cursor-pointer text-gray-900 gap-3">
             <input

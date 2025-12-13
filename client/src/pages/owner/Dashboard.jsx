@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { assets } from "../../assets/data";
 import { useAppContext } from "../../hooks/useAppContext";
 import toast from "react-hot-toast";
@@ -11,7 +11,7 @@ const Dashboard = () => {
     totalRevenue: 0,
   });
 
-  const getDashboardData = async () => {
+  const getDashboardData = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/bookings/agency", {
         headers: {
@@ -19,18 +19,24 @@ const Dashboard = () => {
         },
       });
       if (data.success) {
-        setDashboardData(data.dashboard);
+        setDashboardData(data.dashboard || {
+          bookings: [],
+          totalBookings: 0,
+          totalRevenue: 0,
+        });
       } else {
         toast.error(data.message);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     }
-  };
+  }, [axios, getToken]);
 
   useEffect(() => {
-    getDashboardData();
-  }, [user]);
+    if (user) {
+      getDashboardData();
+    }
+  }, [user, getDashboardData]);
 
   return (
     <div className="md:px-8 py-6 xl:py-8 m-1 sm:m-3 h-[97vh] overflow-y-scroll lg:w-11/12 bg-white rounded-xl">
@@ -68,13 +74,17 @@ const Dashboard = () => {
           <div className="hidden lg:block">{index + 1}</div>
           <div className="flexStart gap-x-2 max-w-64">
             <div className="overflow-hidden rounded-lg">
-              <img
-                src={booking.car.images[0]}
-                alt={booking.car.title}
-                className="w-16 rounded-lg"
-              />
+              {booking.car?.images && booking.car.images.length > 0 ? (
+                <img
+                  src={booking.car.images[0]}
+                  alt={booking.car?.title || "Voiture"}
+                  className="w-16 rounded-lg"
+                />
+              ) : (
+                <div className="w-16 h-16 bg-gray-200 rounded-lg flexCenter text-xs text-gray-400">N/A</div>
+              )}
             </div>
-            <div className="line-clamp-2">{booking.car.title}</div>
+            <div className="line-clamp-2">{booking.car?.title || "Voiture"}</div>
           </div>
           <div>
             {new Date(booking.pickUpDate).toLocaleDateString()} à{" "}

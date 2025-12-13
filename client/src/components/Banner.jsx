@@ -22,7 +22,7 @@ const Banner = () => {
                 Nous gérons les assurances, la vérification des conducteurs et les paiements
                 sécurisés
               </p>
-              <button onClick={() => navigate("/listing")} className="btn-white w-36">
+              <button onClick={() => navigate("/Listing")} className="btn-white w-36">
                 Explorer les voitures
               </button>
             </div>

@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-import connectDB from "./config/mongodb.js";
+import db from './config/database.js';
 import { clerkMiddleware } from "@clerk/express";
 import clerkWebhooks from "./controllers/clerkWebhooks.js";
 import userRouter from "./routes/userRoute.js";
@@ -9,17 +9,42 @@ import agencyRouter from "./routes/agencyRoute.js";
 import connectCloudinary from "./config/cloudinary.js";
 import carRouter from "./routes/carRoute.js";
 import bookingRouter from "./routes/bookingRoute.js";
-// import { stripeWebhooks } from "./controllers/stripeWebhooks.js";
+// import { stripeWebhooks } from "./controllers/stripeWebhooks.js"; // Commenté car non utilisé actuellement
 
-// Connect to Database and Cloudinary
+// Tester la connexion PostgreSQL au démarrage
+try {
+  await db.testConnection();
+} catch (error) {
+  console.error('❌ Erreur lors du test de connexion PostgreSQL:', error.message);
+  // Ne pas arrêter le serveur, continuer quand même
+}
 
-await connectDB();
-await connectCloudinary();
+// Connect to Cloudinary
+try {
+  await connectCloudinary();
+  console.log('✅ Cloudinary configuré');
+} catch (error) {
+  console.error('❌ Erreur lors de la configuration Cloudinary:', error.message);
+  // Ne pas arrêter le serveur, continuer quand même
+}
 
 // initialize Express
 const app = express();
 // Enable Cors Origin Ressource sharing
 app.use(cors());
+
+// Fermer proprement à l'arrêt
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM reçu, fermeture...');
+  await db.closePool();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT reçu, fermeture...');
+  await db.closePool();
+  process.exit(0);
+});
 
 // API to listen stripe Webhooks
 {

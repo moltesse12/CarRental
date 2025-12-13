@@ -8,17 +8,22 @@ const Hero = () => {
 
   const OnSearch = async e => {
     e.preventDefault();
-    navigate(`/listing?destination=${destination}`);
+    navigate(`/Listing?destination=${destination}`);
     // API to save recent searched city
-    await axios.post(
-      "/api/users/store-recent-search",
-      { recentSearchCities: destination },
-      {
-        headers: {
-          Authorization: `Bearer ${await getToken()}`,
-        },
-      }
-    );
+    try {
+      await axios.post(
+        "/api/user/store-recent-search",
+        { recentSearchedCities: destination },
+        {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`,
+          },
+        }
+      );
+    } catch (error) {
+      // Ignorer les erreurs silencieusement pour ne pas perturber l'expérience utilisateur
+      console.log("Could not save recent search:", error);
+    }
     // Add destination to searchedCities max 3 recent searched cities
     setSearchedCities(prevSearchedCities => {
       const updatedSearchedCities = [destination, ...prevSearchedCities];

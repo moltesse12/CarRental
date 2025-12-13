@@ -1,4 +1,4 @@
-import User from "../models/User.js";
+import db from "../config/database.js";
 
 export const authUser = async (req, res, next) => {
   try {
@@ -8,27 +8,39 @@ export const authUser = async (req, res, next) => {
       return res.json({ success: false, message: "Unauthorized" });
     }
 
-    let user = await User.findById(userId);
+    // Récupérer l'utilisateur depuis PostgreSQL
+    let userResult = await db.query(
+      'SELECT * FROM users WHERE id = $1',
+      [userId]
+    );
+
+    let user;
 
     // If user doesn't exist, create it from Clerk data
-    if (!user) {
+    if (userResult.rows.length === 0) {
       try {
         const clerkUser = req.auth;
-        user = await User.create({
-          _id: userId,
-          username: clerkUser.user?.firstName
-            ? `${clerkUser.user.firstName} ${clerkUser.user.lastName || ""}`.trim()
-            : "User",
-          email: clerkUser.user?.emailAddresses?.[0]?.emailAddress || "unknown@example.com",
-          image: clerkUser.user?.imageUrl || "https://via.placeholder.com/150",
-          role: "user",
-          recentSearchedCities: [],
-        });
+        const username = clerkUser.user?.firstName
+          ? `${clerkUser.user.firstName} ${clerkUser.user.lastName || ""}`.trim()
+          : "User";
+        const email = clerkUser.user?.emailAddresses?.[0]?.emailAddress || "unknown@example.com";
+        const image = clerkUser.user?.imageUrl || "https://via.placeholder.com/150";
+
+        const insertResult = await db.query(
+          `INSERT INTO users (id, username, email, image, role)
+           VALUES ($1, $2, $3, $4, $5)
+           RETURNING *`,
+          [userId, username, email, image, "user"]
+        );
+
+        user = insertResult.rows[0];
         console.log("✓ User created from Clerk:", userId);
       } catch (createError) {
         console.error("Error creating user:", createError);
         return res.json({ success: false, message: "Failed to create user" });
       }
+    } else {
+      user = userResult.rows[0];
     }
 
     req.user = user;

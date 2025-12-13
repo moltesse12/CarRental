@@ -52,18 +52,19 @@ const Listing = () => {
 
   const filteredCars = useMemo(() => {
     const sortCars = (a, b) => {
-      if (selectedSort === "Prix croissant") return a.price.sale - b.price.sale;
-      if (selectedSort === "Prix décroissant") return b.price.sale - a.price.sale;
+      if (selectedSort === "Prix croissant") return (a.price?.sale || 0) - (b.price?.sale || 0);
+      if (selectedSort === "Prix décroissant") return (b.price?.sale || 0) - (a.price?.sale || 0);
       return 0;
     };
 
     const matchesPrice = car => {
       if (selectedFilters.priceRange.length === 0) return true;
+      const carPrice = car.price?.sale || 0;
       return selectedFilters.priceRange.some(range => {
         const [minStr, maxStr] = range.split(" to ");
         const min = Number(minStr?.trim() || 0);
         const max = Number(maxStr?.trim() || Infinity);
-        return car.price?.sale >= min && car.price?.sale <= max;
+        return carPrice >= min && carPrice <= max;
       });
     };
 

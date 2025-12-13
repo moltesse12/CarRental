@@ -15,7 +15,7 @@ const Item = ({ car }) => {
   return (
     <div
       onClick={() => {
-        navigate("/listing/" + car._id);
+        navigate("/Listing/" + car._id);
         scrollTo(0, 0);
       }}
       className="block rounded-lg ring-1 ring-slate-900/5 p-5 cursor-pointer"
@@ -26,30 +26,34 @@ const Item = ({ car }) => {
         <h5 className="my-1 text-gray-50">{car.bodyType}</h5>
         <div className="text-sm font-bold text-solid">
           {currency}
-          {car.price.sale} | {currency}
-          {car.price.rent}.00 <span className="text-xs">/jour</span>
+          {car.price?.sale || 0} | {currency}
+          {car.price?.rent || 0}.00 <span className="text-xs">/jour</span>
         </div>
       </div>
       {/* IMAGE */}
       <div className="relative py-6">
-        <img src={car.images[0]} alt={car.title} />
+        {car.images && car.images.length > 0 ? (
+          <img src={car.images[0]} alt={car.title} />
+        ) : (
+          <div className="flexCenter h-32 bg-gray-200 rounded">Aucune image</div>
+        )}
       </div>
       {/* Info */}
       <div>
         <div className="flexBetween py-2">
           <p className="flexCenter flex-col gap-1 font-semibold">
             <img src={assets.transmission} alt="" width={19} />
-            {car.specs.transmission}
+            {car.specs?.transmission || "N/A"}
           </p>
           <hr className="h-11 w-0.5 bg-slate-900/20 border-none" />
           <p className="flexCenter flex-col gap-1 font-semibold">
             <img src={assets.seats} alt="" width={23} />
-            {car.specs.seats}
+            {car.specs?.seats || "N/A"}
           </p>
           <hr className="h-11 w-0.5 bg-slate-900/20 border-none" />
           <p className="flexCenter flex-col gap-1 font-semibold">
             <img src={assets.fuelType} alt="" width={19} />
-            {car.specs.fuelType}
+            {car.specs?.fuelType || "N/A"}
           </p>
           <hr className="h-11 w-0.5 bg-slate-900/20 border-none" />
           <p className="flexCenter flex-col gap-1 font-semibold">

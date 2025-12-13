@@ -40,36 +40,42 @@ const MyBookings = () => {
             {/* CAR LIST */}
             <div className="flex gap-3 mb-3">
               <div className="bg-primary rounded-xl overflow-hidden flexCenter h-19">
-                <img
-                  src={booking.car.images[0]}
-                  alt=""
-                  className="max-w-full max-h-full object-contain"
-                />
+                {booking.car?.images && booking.car.images.length > 0 ? (
+                  <img
+                    src={booking.car.images[0]}
+                    alt=""
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <div className="flexCenter h-full w-full text-gray-400 text-xs">Aucune image</div>
+                )}
               </div>
 
               <div>
-                <h5 className="capitalize line-clamp-1">{booking.car.title}</h5>
+                <h5 className="capitalize line-clamp-1">{booking.car?.title || "Voiture"}</h5>
 
                 <div className="flex gap-4 mt-1">
                   <div className="flex items-center gap-x-2">
                     <h5>Places :</h5>
-                    <p>{booking.car.specs.seats}</p>
+                    <p>{booking.car?.specs?.seats || "N/A"}</p>
                   </div>
 
                   <div className="flex items-center gap-x-2">
                     <h5>Total :</h5>
                     <p>
                       {currency}
-                      {booking.totalPrice}
+                      {booking.totalPrice || 0}
                     </p>
                   </div>
 
-                  <div>
-                    <p className="flex items-baseline gap-1 mt-0.5">
-                      <img src={assets.pin} alt="" width={13} />
-                      {booking.car.address}
-                    </p>
-                  </div>
+                  {booking.car?.address && (
+                    <div>
+                      <p className="flex items-baseline gap-1 mt-0.5">
+                        <img src={assets.pin} alt="" width={13} />
+                        {booking.car.address}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Booking Summary */}
